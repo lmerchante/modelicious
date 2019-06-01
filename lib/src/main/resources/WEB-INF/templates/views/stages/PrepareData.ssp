@@ -1,0 +1,16 @@
+<%@ val stage: scala.xml.Elem %>
+
+<% import com.modelicious.in.html.ScalateHelpers %>
+<li> Transforms
+	<ul>
+	#for( t <- (stage \ "transformations" ).head.child  )
+		<li><a href="#" class="withData">${t.head.label}</a>		
+			<div class="dataDiv collapse">
+			<pre><code class="xml">
+<%= new scala.xml.PrettyPrinter(80, 2).format(t) %>
+			</code></pre>
+			</div>
+		</li>
+	#end
+	</ul>
+</li>

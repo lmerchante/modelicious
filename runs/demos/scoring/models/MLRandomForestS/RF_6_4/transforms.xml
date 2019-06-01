@@ -1,0 +1,45 @@
+<metadata>
+  <remove_outliers force_checkpoint="false">
+    <stats>
+      posee_fondos_inversion: 261514, 0.1541332395206375, 0.36107711439693874; saldo_medio_mensual_total_pasivo_tendabsoluta12m: 261514, 1348.0184401599636, 402991.9979445224; saldo_medio_mensual_total_pasivo_desvtipica: 261514, 4279.1110830869375, 178444.12807005516; im_saldmedmensutotpasv_mt: 261514, 35163.745099612795, 215105.49002306705; margen_ordinario_tp: 261514, 33269.96570738087, 444297.65567058726; saldo_medio_mensual_total_pasivo_minimo: 261514, 28543.735888633284, 346537.380085122; saldo_medio_mensual_total_pasivo_maximo: 261514, 40969.176859518106, 776397.500912492; im_reembfondinvermes_mt: 261514, 196.06036766674052, 4431.594345054365; saldofinal_pasivo_titprinc: 261514, 3124099.287280987, 4.764968011523404E7; margen_financiero_titularidad_principal_interanual: 261514, 13549.747780233563, 132867.11648417608; nu_ctrahorrplz_mt: 261514, 0.2635193526923989, 0.7199030366608066; posee_deposito_plazo: 261514, 0.2032969554211247, 0.40245238561185054; importe_lcp: 261514, 2135.8692842448204, 2934.758133927323; im_saldmedmensuahorrvis_mt: 261514, 10056.097714615711, 106163.66917090028; numero_lineas_productos: 261514, 6.316633143923461, 3.342220952093903; comisiones_todas_titularidades_interanual: 261514, 18793.26457474552, 65255.04082981039; codigo_segmento_interno: 261514, 2.689481251481756, 1.8524777611899748; im_saldmensufondinver_mt: 261514, 9030.948430523807, 49432.16211512919; im_totcomismes_mt: 261514, 9.872562424956635, 56.99738309605027; in_tenacctabk_mt: 261514, 0.17232729414104025, 0.5399883417972453
+    </stats>
+    <max_percentage_of_outliers>0.05</max_percentage_of_outliers>
+    <times>3.0</times>
+    <columns>
+      saldofinal_pasivo_titprinc,saldo_medio_mensual_total_pasivo_desvtipica,saldo_medio_mensual_total_pasivo_tendabsoluta12m
+    </columns>
+    <bulk>false</bulk>
+  </remove_outliers>
+  <discretize force_checkpoint="false">
+    <splits>
+      saldo_medio_mensual_total_pasivo_tendabsoluta12m:[-Infinity,-411.77,-0.01,0.76,1539.18,Infinity];saldo_medio_mensual_total_pasivo_desvtipica:[-Infinity,0.0,129.0499,611.3116,2260.0956,Infinity];im_saldmedmensutotpasv_mt:[-Infinity,0.0,512.15,5315.03,42695.53,Infinity];margen_ordinario_tp:[-Infinity,241.0,5283.0,16144.0,48124.0,Infinity];saldo_medio_mensual_total_pasivo_minimo:[-Infinity,0.0,83.48,2051.88,23263.63,Infinity];saldo_medio_mensual_total_pasivo_maximo:[-Infinity,0.0,797.68,5862.3,35077.64,Infinity];im_reembfondinvermes_mt:[-Infinity,0.0,3.09,3.5,4.37,Infinity];saldofinal_pasivo_titprinc:[-Infinity,0.0,51273.0,436807.0,3198280.0,Infinity];margen_financiero_titularidad_principal_interanual:[-Infinity,-107.0,-1.0,0.0,4542.0,Infinity];importe_lcp:[-Infinity,0.0,300.0,1600.0,4000.0,Infinity];im_saldmedmensuahorrvis_mt:[-Infinity,0.0,378.74,2717.8,12249.2,Infinity];comisiones_todas_titularidades_interanual:[-Infinity,60.0,2516.0,6924.0,20216.0,Infinity];im_saldmensufondinver_mt:[-Infinity,0.0,33.12,33.3,48.38,Infinity];im_totcomismes_mt:[-Infinity,0.0,0.01,0.21,6.88,Infinity]
+    </splits>
+    <limit>50</limit>
+    <oldCounts>
+      posee_fondos_inversion: 2; saldo_medio_mensual_total_pasivo_tendabsoluta12m: 155839; saldo_medio_mensual_total_pasivo_desvtipica: 195077; im_saldmedmensutotpasv_mt: 183152; margen_ordinario_tp: 90535; saldo_medio_mensual_total_pasivo_minimo: 159561; saldo_medio_mensual_total_pasivo_maximo: 181541; im_reembfondinvermes_mt: 5224; saldofinal_pasivo_titprinc: 177178; margen_financiero_titularidad_principal_interanual: 78048; nu_ctrahorrplz_mt: 20; posee_deposito_plazo: 2; importe_lcp: 829; im_saldmedmensuahorrvis_mt: 174430; numero_lineas_productos: 23; comisiones_todas_titularidades_interanual: 59391; codigo_segmento_interno: 7; im_saldmensufondinver_mt: 34010; im_totcomismes_mt: 12897; in_tenacctabk_mt: 3
+    </oldCounts>
+    <columns>all</columns>
+    <nCategories>5</nCategories>
+    <modifiedCounts>
+      saldo_medio_mensual_total_pasivo_tendabsoluta12m: 5; saldo_medio_mensual_total_pasivo_desvtipica: 5; im_saldmedmensutotpasv_mt: 5; margen_ordinario_tp: 5; saldo_medio_mensual_total_pasivo_minimo: 5; saldo_medio_mensual_total_pasivo_maximo: 5; im_reembfondinvermes_mt: 5; saldofinal_pasivo_titprinc: 5; margen_financiero_titularidad_principal_interanual: 5; importe_lcp: 5; im_saldmedmensuahorrvis_mt: 5; comisiones_todas_titularidades_interanual: 5; im_saldmensufondinver_mt: 5; im_totcomismes_mt: 5
+    </modifiedCounts>
+    <exclude/>
+  </discretize>
+  <onehot force_checkpoint="false">
+    <binary>true</binary>
+    <columns>
+      cod_sexo,cod_estado_civil,segmento_valor,segmento_actividad,segmento_socioeconomico,segmento_por_relacion,segmento_marketing,clasificacion_nivel_renta,codigo_segmento_interno,in_tenacctabk_mt,in_tenfondinver_mt,in_tenplanpens_mt
+    </columns>
+    <labels> codigo_segmento_interno:[1.0,4.0,6.0,3.0,0.0,2.0,5.0];in_tenacctabk_mt:[0.0,2.0,1.0] </labels>
+  </onehot>
+  <standarize force_checkpoint="false">
+    <mean>
+      [0.2031163305055236,0.15391856367163734,2.1684861842936094,6.315872851878687,1.972311189172443,2.553768563480313,1.9886198834437105,2.1198203058932727,2.1770882360819175,2.1808382408651377,2.09904604470158,2.2499148595852643,0.2630360497908782,1.4033857186042198,2.16672215143133,2.169370113992486,1.084929955267802,2.0728113173613596,0.40877730711391214,0.2242885513884584,0.13402440564337453,0.07433045195210708,0.023349519578468852]
+    </mean>
+    <withMean>true</withMean>
+    <withSTD>true</withSTD>
+    <std>
+      [0.40231915956517844,0.36087135900690254,1.195194922846945,3.341067636556047,1.416624580575253,1.3711749596111389,1.4117439455188436,1.2486673697230544,1.17037958243918,1.1565649170121768,1.3707961678370848,1.133796434255044,0.7181331813562009,1.023363453374962,1.1867440563989604,1.1946584607558606,0.4974410650136555,1.228049967815782,0.4916089351275081,0.4171137289276771,0.3406791869954157,0.26230840465404937,0.15101128029321345]
+    </std>
+  </standarize>
+</metadata>

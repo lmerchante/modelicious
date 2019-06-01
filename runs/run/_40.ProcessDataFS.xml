@@ -1,0 +1,9 @@
+<PrepareData>
+	<data>
+		<input url="hdfs:/user/A181345/cc/noFS.dat"/>
+		<output url="memory:k3|hdfs:/user/A181345/cc/FS.dat"/>
+	</data>
+	<transformations>
+		<feature_selection></feature_selection>
+	</transformations>
+</PrepareData>

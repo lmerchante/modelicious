@@ -1,0 +1,18 @@
+<spark App="${modelid}-${sessionid}" Master="yarn-client" base="${environment.tmpfiles}" checkpointFolder="${environment.tmpfiles}/cache" logLevel="INFO" ModelID="${modelid}" SessionID="${sessionid}" Pipeline="SCORING">
+	<settings>
+		<setting name="spark.executor.memory">4g</setting>
+		<setting name="spark.executor.cores">2</setting>
+		<setting name="spark.executor.instances">20</setting>
+		<!--setting name="spark.logLineage">true</setting-->
+		<setting name="spark.ui.retainedStages">10</setting>  <!-- El por defecto son 1000 -->
+		<setting name="spark.ui.retainedTasks">5000</setting> <!-- El por defecto son 100000 -->
+	</settings>
+	<notifications>
+		<enabled>true</enabled>
+		<email>lsanchezm@modelicious.com</email>
+	</notifications>
+    <documentation>
+		<enabled>false</enabled>
+		<format>latex</format>
+    </documentation>
+</spark>

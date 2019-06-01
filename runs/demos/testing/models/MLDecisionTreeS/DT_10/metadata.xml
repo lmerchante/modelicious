@@ -1,0 +1,9 @@
+<conf model="MLDecisionTreeS">
+  <algo>Classification</algo>
+  <impurity>gini</impurity>
+  <maxDepth>10</maxDepth>
+  <maxBins>32</maxBins>
+  <numClasses>2</numClasses>
+  <useNodeIdCache>false</useNodeIdCache>
+  <categoricalColumns/>
+</conf>

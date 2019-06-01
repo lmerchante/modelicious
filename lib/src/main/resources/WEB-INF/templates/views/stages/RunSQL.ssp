@@ -1,0 +1,1 @@
+<%@ val stage: scala.xml.Elem %>

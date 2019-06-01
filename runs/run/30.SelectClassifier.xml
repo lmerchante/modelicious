@@ -1,0 +1,68 @@
+<SelectClassifier>
+	<options>
+		<kfolds>5</kfolds>
+		<training_rate>0.75</training_rate>
+		<overfitting_splits>0.001,0.01,0.1,1</overfitting_splits>
+	</options>
+	<data>
+		<input url="memory:k2"/>
+	</data>
+	<models>
+		<!--model name= "SVM_regL2_1" id="SVM" test_overfitting="false">
+			<conf>
+				<numIterations>40</numIterations>
+				<regParam>1</regParam>
+				<regType>L2</regType>
+			</conf>
+		</model> 
+		<model name= "SVM_regL1_1" id="SVM" test_overfitting="false">
+			<conf>
+				<numIterations>100</numIterations>
+				<regParam>1</regParam>
+				<regType>L1</regType>
+			</conf>
+		</model-->
+		<!--model name= "RF_6_4" id="RandomForest" test_overfitting="false">
+			<conf>
+				<numTrees>6</numTrees>
+				<algo>Classification</algo>
+				<featureSubsetStrategy>auto</featureSubsetStrategy>
+				<impurity>gini</impurity>
+				<maxDepth>4</maxDepth>
+				<maxBins>32</maxBins>
+				<numClasses>3</numClasses>
+				<useNodeIdCache>true</useNodeIdCache>
+				<categoricalColumns>(ind_nomina_domiciliada;2),(ind_recibos_importantes;2),(ind_seguros_medicos;2)</categoricalColumns>
+			</conf>
+		</model--> 
+		<model name= "DT_6_4" id="DecisionTree" test_overfitting="false">
+			<conf>
+				<algo>Classification</algo>
+				<impurity>gini</impurity>
+				<maxDepth>4</maxDepth>
+				<maxBins>32</maxBins>
+				<numClasses>3</numClasses>
+				<categoricalColumns>(ind_nomina_domiciliada;2),(ind_recibos_importantes;2),(ind_seguros_medicos;2)</categoricalColumns>
+				<useNodeIdCache>false</useNodeIdCache>
+			</conf>
+		</model>
+		<!--model name= "Bayes_10" id="NaiveBayes" test_overfitting="false">
+			<conf>
+				<lambda>10</lambda>
+				<modelType></modelType>
+			</conf>
+		</model>  
+		<model name= "NN_2_6_2" id="MultilayerPerceptron" test_overfitting="false">
+			<conf>
+				<layers>2,6,2</layers>
+				<blockSize>128</blockSize>
+				<maxIter>100</maxIter>
+			</conf>
+		</model>
+		<model name= "1VsAll" id="OneVsAllLogistic" test_overfitting="false">
+			<conf>
+				<numClasses>2</numClasses >
+			</conf>
+		</model-->
+	</models>
+</SelectClassifier>

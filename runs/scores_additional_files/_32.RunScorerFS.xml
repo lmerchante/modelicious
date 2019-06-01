@@ -1,0 +1,7 @@
+<RunScorer>
+	<data>
+		<input url="csvgz:datos.checkpoint.raw.cliente.20vars.csvgz:repartition=4"/>
+    <output url="csv:predictions_NB.csv"/>
+	</data>
+  <model url = "${environment.outputfiles}/models/NaiveBayesSC/Bayes_10"/>
+</RunScorer>

@@ -1,0 +1,19 @@
+<spark App="ModelsTemplate" Master="yarn-client" base="${environment.tmpfiles}" checkpointFolder="${environment.tmpfiles}/cache" logLevel="INFO" ModelID="${modelid}" SessionID="${sessionid}" Pipeline="TRAINING">
+	<settings>
+		<setting name="spark.executor.memory">8g</setting>
+		<setting name="spark.executor.cores">4</setting>
+		<setting name="spark.executor.instances">40</setting>
+		<setting name="spark.logLineage">true</setting>
+	</settings>
+  <h2o-settings>
+    <setting name="ice_root">${environment.outputdir}/tmp_h2o</setting>
+  </h2o-settings>
+  <notifications>
+		<enabled>true</enabled>
+		<email>${environment.user}@nube.modelicious.com</email>
+  </notifications>
+  <documentation>
+		<enabled>false</enabled>
+		<format>latex</format>
+  </documentation>
+</spark>

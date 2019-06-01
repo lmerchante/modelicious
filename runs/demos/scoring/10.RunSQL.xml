@@ -1,0 +1,91 @@
+<RunSQL>
+	<data>
+		<output url="memory:k1"/>
+	</data>
+    <label>cliente</label>
+	<sql>
+select I.cliente,
+I.posee_deposito_plazo,I.posee_fondos_inversion,I.saldofinal_pasivo_titprinc,
+I.numero_lineas_productos,I.comisiones_todas_titularidades_interanual,
+I.margen_financiero_titularidad_principal_interanual,I.margen_ordinario_tp,
+I.saldo_medio_mensual_total_pasivo_minimo,I.saldo_medio_mensual_total_pasivo_maximo,
+I.saldo_medio_mensual_total_pasivo_desvtipica,I.saldo_medio_mensual_total_pasivo_tendabsoluta12m,
+I.importe_lcp,I.nu_ctrahorrplz_mt,I.im_saldmensufondinver_mt,
+I.im_saldmedmensutotpasv_mt,I.im_saldmedmensuahorrvis_mt,I.im_reembfondinvermes_mt,
+I.im_totcomismes_mt,I.codigo_segmento_interno,I.in_tenacctabk_mt
+FROM
+(select G.*, 
+coalesce(H.cvlico,0.0) as importe_lcp
+FROM
+(select E.*,		 	 	
+coalesce(F.nu_ctrahorrplz_mt,0) as nu_ctrahorrplz_mt, 	
+coalesce(F.im_saldmensufondinver_mt,0) as im_saldmensufondinver_mt,	
+coalesce(F.im_saldmedmensutotpasv_mt,0) as im_saldmedmensutotpasv_mt,
+coalesce(F.im_saldmedmensuahorrvis_mt,0) as im_saldmedmensuahorrvis_mt,	
+coalesce(F.im_reembfondinvermes_mt,0) as im_reembfondinvermes_mt,	
+coalesce(F.im_totcomismes_mt,0) as im_totcomismes_mt,	
+cast(coalesce(F.in_tenacctabk_mt,'0') as int) as in_tenacctabk_mt	
+FROM
+(select C.*, 
+coalesce(D.idb050_minimo           ,0) AS saldo_medio_mensual_total_pasivo_minimo , 
+coalesce(D.idb050_maximo           ,0) AS saldo_medio_mensual_total_pasivo_maximo  ,
+coalesce(D.idb050_desvtipica       ,0) AS saldo_medio_mensual_total_pasivo_desvtipica ,
+coalesce(D.idb050_tendabsoluta12m  ,0) AS saldo_medio_mensual_total_pasivo_tendabsoluta12m
+FROM (
+select 
+A.copemk as cliente,
+add_months(from_unixtime(unix_timestamp()),-cast("${variables.horizonte}" as int)) as fecha_caracterizacion,
+trim(A.cotdmk) as tipo_de_documento,
+REGEXP_REPLACE(trim(A.condmk), "^0+", "")  as documento,
+CASE trim(A.inlp03) WHEN "1" THEN 1 ELSE 0 END AS posee_deposito_plazo,
+CASE trim(A.inlp04) WHEN "1" THEN 1 ELSE 0 END AS posee_fondos_inversion,
+coalesce(A.casfpa,0) AS saldoFinal_pasivo_titprinc,
+coalesce(A.nulpse,0) AS numero_lineas_productos, 
+coalesce(A.cav176,0) AS comisiones_todas_titularidades_interanual, 
+coalesce(A.cav183,0) AS margen_financiero_titularidad_principal_interanual, 
+coalesce(A.cav188,0) AS margen_ordinario_tp,
+A.coh013 AS codigo_segmento_interno,
+A.codice as centro
+from (select * from ${variables.tabla_mktblof} where snapshot='LATEST' and xcoemp=0 and coh004 = 62120 and trim(in53mk) != "1" and case when (cotpmk=2 or (cotpmk=1 and caedad>18)) then 1 else 0 end =1) A
+INNER JOIN
+(select codice from ${variables.tabla_centros} where snapshot="LATEST" and cocj06=376 and trim(coetce)='CAJA' and xcoemp=0) B
+on 
+A.codice=B.codice
+) C
+LEFT JOIN 
+${variables.tabla_dmtpe}  D
+ON 
+D.snapshot="LATEST"
+AND
+C.tipo_de_documento=trim(D.ldb000)
+AND
+C.documento=REGEXP_REPLACE(trim(D.ldb001), "^0+", "")) E
+LEFT JOIN
+${variables.tablon} F
+ON
+E.cliente=F.co_cliente
+AND
+F.co_entidad=0
+AND
+year(E.fecha_caracterizacion)=year(from_unixtime(unix_timestamp(F.process_date,'yyyyMMdd')))
+AND
+month(E.fecha_caracterizacion)=month(from_unixtime(unix_timestamp(F.process_date,'yyyyMMdd')))) G
+LEFT JOIN 
+(select copemk,cvlico from ${variables.tabla_lcp} where snapshot="LATEST" and xcoemp = 0 AND copser = 93000 AND coeslt =1 AND coespo =6 ) H
+ON 
+G.cliente=H.copemk) I
+INNER JOIN
+(select L.copemk as interviniente
+FROM
+(select copemk, idprig from ${variables.tabla_inventario} where xcoemp=0 and copser=31500 and snapshot="LATEST") K
+LEFT JOIN
+(select copemk,idprig,cosiig from ${variables.tabla_contratos} where copser=31500 and xcoemp=0 and coprbs=850 and snapshot='LATEST') L
+ON
+K.idprig=L.idprig
+WHERE 
+L.cosiig=10000
+group by L.copemk) J
+ON 
+I.cliente=J.interviniente
+	</sql>
+</RunSQL>

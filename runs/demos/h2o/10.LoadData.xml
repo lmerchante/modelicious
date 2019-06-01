@@ -1,0 +1,12 @@
+<LoadData>
+	<data>
+		<output url="memory:k1"/>
+	</data>
+	<sql>
+		<table>datalabin.fond_inv_up_genericos_training</table>
+		<label>label</label>
+		<columns>
+			<include_only>label,posee_deposito_plazo,posee_fondos_inversion,saldofinal_pasivo_titprinc,numero_lineas_productos,comisiones_todas_titularidades_interanual,margen_financiero_titularidad_principal_interanual,margen_ordinario_tp,saldo_medio_mensual_total_pasivo_minimo,saldo_medio_mensual_total_pasivo_maximo,saldo_medio_mensual_total_pasivo_desvtipica,saldo_medio_mensual_total_pasivo_tendabsoluta12m,importe_lcp,nu_ctrahorrplz_mt,im_saldmensufondinver_mt,im_saldmedmensutotpasv_mt,im_saldmedmensuahorrvis_mt,im_reembfondinvermes_mt,im_totcomismes_mt,codigo_segmento_interno,in_tenacctabk_mt</include_only>
+		</columns>
+	</sql>
+</LoadData>

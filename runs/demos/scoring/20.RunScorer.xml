@@ -1,0 +1,7 @@
+<RunScorer>
+  <data>
+    <input url="memory:k1:repartition=40"/>
+    <output url="scores:${environment.outputdb}.${variables.tabla_output}:json=${environment.outputdir}/${modelid}-${sessionid}.json&amp;ic=${environment.outputdir}/${modelid}-${sessionid}.ic"/>
+  </data>
+  <model url = "local:${environment.workingdir}/models/MLRandomForestS/RF_6_4/" balancing="1.0"/>
+</RunScorer>

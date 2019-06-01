@@ -1,0 +1,47 @@
+<metadata>
+  <remove_outliers force_checkpoint="true">
+    <stats>
+      saldo_medio_mensual_total_pasivo_tendrelativa03m: 1018174, 591.5914136350021, 102448.27814060348; margen_ordinario_tp: 1018174, 28397.65316537252, 161096.4066857672; saldofinal_pasivo_titprinc: 1018174, 2180558.5986108463, 2.4251874997799467E7; margen_financiero_titularidad_principal_interanual: 1018174, 15256.22104276872, 184600.68104857515; tiene_lcp: 1018174, 0.6373851620646372, 0.4807551811936288; nu_ctrahorrplz_mt: 1018174, 0.20947009057390975, 0.5799580456269178; posee_deposito_plazo: 1018174, 0.18887243241332033, 0.39140744391596327; saldo_medio_mensual_total_pasivo_tendrelativa01m: 1018174, 222.83160835525084, 43681.69936721716; importe_lcp: 1018174, 1968.1458179053875, 2780.576172441079; nu_opernoautomoficmes_mt: 1018174, 3.682757564031295, 8.10709430855022; im_saldmedmensuahorrvis_mt: 1018174, 9069.930681199878, 68934.7405976572; numero_lineas_productos: 1018174, 6.046589286310591, 3.152739229253257; segmento_valor: 1018174, 381.47894171330245, 2.7001310993419474; edad: 1018174, 51.54113638729726, 19.38868206840229; antiguedad_hasta_la_caracterizacion: 1018174, 7765.204670321576, 4372.151208816526; posee_tarj_credito: 1018174, 0.30599681390410677, 0.4608285715502242; segmento_marketing: 1018174, 364.7136344082642, 1.878224427915153; nu_tjcredactv_mt: 1018174, 0.385167957539674, 0.820762565766302; marca_modelicious_sin_comisiones: 1018174, 0.5324099810052113, 0.49894873247401317; saldo_medio_mensual_total_pasivo_coefvarporcentual: 1018174, 24.645013593256174, 2301.012786362603
+    </stats>
+    <max_percentage_of_outliers>0.05</max_percentage_of_outliers>
+    <times>3.0</times>
+    <columns>
+      saldo_medio_mensual_total_pasivo_coefvarporcentual,saldo_medio_mensual_total_pasivo_tendrelativa01m,saldo_medio_mensual_total_pasivo_tendrelativa03m
+    </columns>
+    <bulk>false</bulk>
+  </remove_outliers>
+  <discretize force_checkpoint="true">
+    <splits>
+      saldo_medio_mensual_total_pasivo_tendrelativa03m:[-Infinity,-10.5063608,-3.028E-4,0.0,9.5834671,Infinity];margen_ordinario_tp:[-Infinity,159.0,4740.0,12932.0,40065.0,Infinity];saldofinal_pasivo_titprinc:[-Infinity,0.0,33566.0,330664.0,2093206.0,Infinity];margen_financiero_titularidad_principal_interanual:[-Infinity,-2.0,-1.0,0.0,3859.0,Infinity];saldo_medio_mensual_total_pasivo_tendrelativa01m:[-Infinity,-4.5619867,-0.0011207,0.0,4.5186714,Infinity];importe_lcp:[-Infinity,0.0,300.0,1380.0,3620.0,Infinity];nu_opernoautomoficmes_mt:[-Infinity,0.0,1.0,2.0,5.0,Infinity];im_saldmedmensuahorrvis_mt:[-Infinity,0.0,291.72,2342.95,10962.89,Infinity];edad:[-Infinity,35.0,46.0,56.0,69.0,Infinity];antiguedad_hasta_la_caracterizacion:[-Infinity,3530.0,6382.0,9918.0,10673.0,Infinity];saldo_medio_mensual_total_pasivo_coefvarporcentual:[-Infinity,0.0,3.2459,18.6041,53.2405,Infinity]
+    </splits>
+    <limit>50</limit>
+    <oldCounts>
+      saldo_medio_mensual_total_pasivo_tendrelativa03m: 718956; margen_ordinario_tp: 167420; saldofinal_pasivo_titprinc: 569085; margen_financiero_titularidad_principal_interanual: 195017; tiene_lcp: 2; nu_ctrahorrplz_mt: 25; posee_deposito_plazo: 2; saldo_medio_mensual_total_pasivo_tendrelativa01m: 713148; importe_lcp: 949; nu_opernoautomoficmes_mt: 170; im_saldmedmensuahorrvis_mt: 526718; numero_lineas_productos: 24; segmento_valor: 7; edad: 143; antiguedad_hasta_la_caracterizacion: 24622; posee_tarj_credito: 2; segmento_marketing: 12; nu_tjcredactv_mt: 36; marca_modelicious_sin_comisiones: 2; saldo_medio_mensual_total_pasivo_coefvarporcentual: 491230
+    </oldCounts>
+    <columns>all</columns>
+    <nCategories>5</nCategories>
+    <modifiedCounts>
+      saldo_medio_mensual_total_pasivo_tendrelativa03m: 5; margen_ordinario_tp: 5; saldofinal_pasivo_titprinc: 5; margen_financiero_titularidad_principal_interanual: 5; saldo_medio_mensual_total_pasivo_tendrelativa01m: 5; importe_lcp: 5; nu_opernoautomoficmes_mt: 5; im_saldmedmensuahorrvis_mt: 5; edad: 5; antiguedad_hasta_la_caracterizacion: 5; saldo_medio_mensual_total_pasivo_coefvarporcentual: 5
+    </modifiedCounts>
+    <exclude/>
+  </discretize>
+  <onehot force_checkpoint="true">
+    <binary>true</binary>
+    <columns>
+      cod_sexo,cod_estado_civil,segmento_valor,segmento_actividad,segmento_socioeconomico,segmento_por_relacion,segmento_marketing,clasificacion_nivel_renta,codigo_segmento_interno,tenenc_accionmodelicious_mt,tenenc_fondoinvers_mt,tenenc_planpensiones_mt
+    </columns>
+    <labels>
+      segmento_valor:[380.0,382.0,381.0,395.0,393.0,394.0,392.0];segmento_marketing:[364.0,366.0,365.0,363.0,361.0,362.0,367.0,374.0,369.0,372.0,368.0,371.0]
+    </labels>
+  </onehot>
+  <standarize force_checkpoint="true">
+    <mean>
+      [1.989851657657604,2.052177853533194,0.53245572387544,0.18900845269234814,0.3061134817444847,2.190983270569709,6.047149882680681,2.5956439980379606,2.0123521958421677,2.169570897337977,2.314914150961016,2.3435386888349554,2.2420051331503013,0.6377777056921742,2.0050161750264666,0.3853037769252016,0.20962362468040685,2.168179972849939,0.36062002793644804,0.28715562331602296,0.01716980779684442,0.40469218300437726,0.2684828306836959,0.0914432094869897,0.017256310521188745]
+    </mean>
+    <withMean>true</withMean>
+    <withSTD>true</withSTD>
+    <std>
+      [1.4097278027990714,1.4150798305102745,0.49894575927538093,0.39151552737987766,0.4608776701392264,1.2028495429890655,3.153282054581108,1.369725795250872,1.4199885540826176,1.1900091458625375,1.4446873803383335,1.4408569612696243,1.1439493826217415,0.4806428309057409,1.2752775516615649,0.8208904519712988,0.5801583846015482,1.1905867814626154,0.4801806431312308,0.45243504785621713,0.12990389557271148,0.490832615905983,0.4431703886431405,0.28823849602985047,0.13022498584523196]
+    </std>
+  </standarize>
+</metadata>

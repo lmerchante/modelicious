@@ -1,0 +1,8 @@
+<PrepareData>
+	<data>
+		<input url="lcsvgz:${environment.workingdir}/test_data.csvgz"/>
+		<output url="db:${environment.tmpdb}.test_table_${modelid}_${sessionid}:dropFirst=true"/>
+	</data>
+	<transformations>
+	</transformations>
+</PrepareData>

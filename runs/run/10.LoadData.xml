@@ -1,0 +1,16 @@
+<LoadData>
+	<data>
+		<output url="memory:k1|hdfs:test.dat"/>
+	</data>
+	<sql>
+		<table>datalabin.borrar_luis_100</table>
+		<label>etiqueta</label>
+		<columns>
+			<exclude>
+				<column>cliente</column>
+				<column>sexo</column>
+				<column>ind_cargo_comunidad</column>
+			</exclude>
+		</columns>
+	</sql>
+</LoadData>

@@ -1,0 +1,1254 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Results</title>
+	<!-- JQuery -->
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+   	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/default.min.css">
+
+	<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap.min.css">
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script>
+	<script type="text/javascript" src="http://code.highcharts.com/4.0.4/highcharts.js"></script>
+	<script type="text/javascript" src="http://code.highcharts.com/4.0.4/modules/exporting.js"></script>
+	<script type="text/javascript" src="http://code.highcharts.com/4.0.4/highcharts-more.js"></script>
+	
+	<script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+	
+
+	
+	<script>
+	$.fn.extend({
+    treed: function (o) {
+      
+      var openedClass = 'glyphicon-minus-sign';
+      var closedClass = 'glyphicon-plus-sign';
+      
+      if (typeof o != 'undefined'){
+        if (typeof o.openedClass != 'undefined'){
+        openedClass = o.openedClass;
+        }
+        if (typeof o.closedClass != 'undefined'){
+        closedClass = o.closedClass;
+        }
+      };
+      
+        //initialize each of the top levels
+        var tree = $(this);
+        tree.addClass("tree");
+        tree.find('li').has("ul").each(function () {
+            var branch = $(this); //li with children ul
+            branch.prepend("<i class='indicator glyphicon " + closedClass + "'></i>");
+            branch.addClass('branch');
+            branch.on('click', function (e) {
+                if (this == e.target) {
+                    var icon = $(this).children('i:first');
+                    icon.toggleClass(openedClass + " " + closedClass);
+                    $(this).children().children().toggle();
+                }
+            })
+            branch.children().children().toggle();
+        });
+        //fire event from the dynamically added icon
+      tree.find('.branch .indicator').each(function(){
+        $(this).on('click', function () {
+            $(this).closest('li').click();
+        });
+      });
+        //fire event to open branch if the li contains an anchor instead of text
+        tree.find('.branch>a').each(function () {
+            $(this).on('click', function (e) {
+                $(this).closest('li').click();
+                e.preventDefault();
+            });
+        });
+        //fire event to open branch if the li contains a button instead of text
+        tree.find('.branch>button').each(function () {
+            $(this).on('click', function (e) {
+                $(this).closest('li').click();
+                e.preventDefault();
+            });
+        });
+    }
+});
+</script>
+<script>
+$('#tree .branch').each(function(){
+var icon = $(this).children('i:first');
+icon.addClass('glyphicon-minus-sign').removeClass('glyphicon-plus-sign');
+$(this).children().children().show();
+});
+</script>
+
+	<style>
+	.tree, .tree ul {
+    margin:0;
+    padding:0;
+    list-style:none
+}
+.tree ul {
+    margin-left:1em;
+    position:relative
+}
+.tree ul ul {
+    margin-left:.5em
+}
+.tree ul:before {
+    content:"";
+    display:block;
+    width:0;
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    border-left:1px solid
+}
+.tree li {
+    margin:0;
+    padding:0 1em;
+    line-height:2em;
+    color:#369;
+    font-weight:700;
+    position:relative
+}
+.tree ul li:before {
+    content:"";
+    display:block;
+    width:10px;
+    height:0;
+    border-top:1px solid;
+    margin-top:-1px;
+    position:absolute;
+    top:1em;
+    left:0
+}
+.tree ul li:last-child:before {
+    background:#fff;
+    height:auto;
+    top:1em;
+    bottom:0
+}
+.indicator {
+    margin-right:5px;
+}
+.tree li a {
+    text-decoration: none;
+    color:#369;
+}
+.tree li a:hover {
+    text-decoration: underline;
+}
+
+.tree li button, .tree li button:active, .tree li button:focus {
+    text-decoration: none;
+    color:#369;
+    border:none;
+    background:transparent;
+    margin:0px 0px 0px 0px;
+    padding:0px 0px 0px 0px;
+    outline: 0;
+}
+
+/* results box 
+---- */
+#results pre{
+	max-height: 500px;
+	height: 500px;
+	overflow-y: scroll;
+	overflow-x: auto;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 60px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  background-color: #f5f5f5;
+}
+
+/* Fixed nav bar
+-------------------------------------------------- */
+body {
+	overflow-y: scroll;
+}
+
+body > .container-fluid {
+  padding: 60px 15px 0;
+}
+.container .text-muted {
+  margin: 20px 0;
+}
+
+.footer > .container {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+code {
+  font-size: 80%;
+}
+
+
+</style>	
+</head>
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Results for result</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><button data-toggle="collapse" data-target="#results" type="button" class="btn navbar-btn">Show Raw</button></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+	<div class="container-fluid">
+		
+
+
+
+<div class="row">
+<div class="col-md-12">
+<div id="results" class="collapse">
+<pre><code class="xml">
+&lt;result&gt;
+  &lt;LoadData 
+  file=&quot;C:\Users\A175606\workspace\commander\runs\demos\overfitting\10.LoadData.xml&quot;&gt;
+    &lt;data&gt;
+      &lt;output url=&quot;memory:k1&quot;/&gt;
+    &lt;/data&gt;
+    &lt;sql&gt;
+      &lt;table&gt;datalabin.fond_inv_up_genericos_training&lt;/table&gt;
+      &lt;label&gt;label&lt;/label&gt;
+      &lt;columns&gt;
+        &lt;include_only&gt;
+          label,posee_deposito_plazo,posee_fondos_inversion,saldofinal_pasivo_titprinc,numero_lineas_productos,comisiones_todas_titularidades_interanual,margen_financiero_titularidad_principal_interanual,margen_ordinario_tp,saldo_medio_mensual_total_pasivo_minimo,saldo_medio_mensual_total_pasivo_maximo,saldo_medio_mensual_total_pasivo_desvtipica,saldo_medio_mensual_total_pasivo_tendabsoluta12m,importe_lcp,nu_ctrahorrplz_mt,im_saldmensufondinver_mt,im_saldmedmensutotpasv_mt,im_saldmedmensuahorrvis_mt,im_reembfondinvermes_mt,im_totcomismes_mt,codigo_segmento_interno,in_tenacctabk_mt
+        &lt;/include_only&gt;
+      &lt;/columns&gt;
+    &lt;/sql&gt;
+    &lt;result&gt;
+      &lt;columns_ordered&gt;
+        [(label,int),(codigo_segmento_interno,int),(posee_deposito_plazo,int),(posee_fondos_inversion,int),(saldofinal_pasivo_titprinc,bigint),(numero_lineas_productos,int),(comisiones_todas_titularidades_interanual,bigint),(margen_financiero_titularidad_principal_interanual,bigint),(margen_ordinario_tp,bigint),(saldo_medio_mensual_total_pasivo_minimo,decimal(15,2)),(saldo_medio_mensual_total_pasivo_maximo,decimal(15,2)),(saldo_medio_mensual_total_pasivo_desvtipica,decimal(15,4)),(saldo_medio_mensual_total_pasivo_tendabsoluta12m,decimal(15,2)),(importe_lcp,bigint),(in_tenacctabk_mt,int),(nu_ctrahorrplz_mt,int),(im_saldmensufondinver_mt,decimal(15,2)),(im_saldmedmensutotpasv_mt,decimal(15,2)),(im_saldmedmensuahorrvis_mt,decimal(15,2)),(im_reembfondinvermes_mt,decimal(15,2)),(im_totcomismes_mt,decimal(15,2))]
+      &lt;/columns_ordered&gt;
+    &lt;/result&gt;
+&lt;/LoadData&gt;
+  &lt;PrepareData 
+  file=&quot;C:\Users\A175606\workspace\commander\runs\demos\overfitting\20.ProcessData.xml&quot;&gt;
+    &lt;data&gt;
+      &lt;input 
+      url=&quot;lcsv:/Users/A175606/workspace/commander/runs/demos/overfitting//data.csv&quot;&gt;
+&lt;/input&gt;
+      &lt;output url=&quot;hdfs:/user/A175606/test_overfitting/temp.dat&quot;/&gt;
+    &lt;/data&gt;
+    &lt;transformations&gt;
+      &lt;remove_outliers force_checkpoint=&quot;false&quot;&gt;
+        &lt;columns&gt;all&lt;/columns&gt;
+        &lt;times&gt;3.0&lt;/times&gt;
+        &lt;max_percentage_of_outliers&gt;0.05&lt;/max_percentage_of_outliers&gt;
+        &lt;params&gt;
+          &lt;columns&gt;
+            saldofinal_pasivo_titprinc;saldo_medio_mensual_total_pasivo_desvtipica;saldo_medio_mensual_total_pasivo_tendabsoluta12m
+          &lt;/columns&gt;
+          &lt;lines_removed&gt; 181 &lt;/lines_removed&gt;
+        &lt;/params&gt;
+      &lt;/remove_outliers&gt;
+      &lt;discretize force_checkpoint=&quot;false&quot;&gt;
+        &lt;limit&gt;50&lt;/limit&gt;
+        &lt;nCategories&gt;5&lt;/nCategories&gt;
+        &lt;discretizacion&gt;
+          &lt;antes&gt;
+            &lt;schema&gt;
+              &lt;column name=&quot;codigo_segmento_interno&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:7}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;posee_deposito_plazo&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:2}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;posee_fondos_inversion&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:2}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;saldofinal_pasivo_titprinc&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:177178}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;numero_lineas_productos&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:23}]]&gt;
+              &lt;/column&gt;
+              &lt;column 
+              name=&quot;comisiones_todas_titularidades_interanual&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:59391}]]&gt;
+&lt;/column&gt;
+              &lt;column 
+              name=&quot;margen_financiero_titularidad_principal_interanual&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:78048}]]&gt;
+&lt;/column&gt;
+              &lt;column name=&quot;margen_ordinario_tp&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:90535}]]&gt;
+              &lt;/column&gt;
+              &lt;column 
+              name=&quot;saldo_medio_mensual_total_pasivo_minimo&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:159561}]]&gt;
+&lt;/column&gt;
+              &lt;column 
+              name=&quot;saldo_medio_mensual_total_pasivo_maximo&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:181541}]]&gt;
+&lt;/column&gt;
+              &lt;column 
+              name=&quot;saldo_medio_mensual_total_pasivo_desvtipica&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:195077}]]&gt;
+&lt;/column&gt;
+              &lt;column 
+              name=&quot;saldo_medio_mensual_total_pasivo_tendabsoluta12m&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:155839}]]&gt;
+&lt;/column&gt;
+              &lt;column name=&quot;importe_lcp&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:829}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;in_tenacctabk_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:3}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;nu_ctrahorrplz_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:20}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;im_saldmensufondinver_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:34010}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;im_saldmedmensutotpasv_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:183152}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;im_saldmedmensuahorrvis_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:174430}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;im_reembfondinvermes_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:5224}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;im_totcomismes_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;dif_values&quot;:12897}]]&gt;
+              &lt;/column&gt;
+            &lt;/schema&gt;
+          &lt;/antes&gt;
+          &lt;despues&gt;
+            &lt;schema&gt;
+              &lt;column name=&quot;codigo_segmento_interno&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:7}}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;posee_deposito_plazo&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;posee_fondos_inversion&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;saldofinal_pasivo_titprinc&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 51273.0, 436807.0, 3198280.0, Infinity)&quot;},&quot;outliers_std_multiplier&quot;:3.0}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;numero_lineas_productos&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:23}}]]&gt;
+              &lt;/column&gt;
+              &lt;column 
+              name=&quot;comisiones_todas_titularidades_interanual&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 60.0, 2516.0, 6924.0, 20216.0, Infinity)&quot;}}]]&gt;
+&lt;/column&gt;
+              &lt;column 
+              name=&quot;margen_financiero_titularidad_principal_interanual&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, -107.0, -1.0, 0.0, 4542.0, Infinity)&quot;}}]]&gt;
+&lt;/column&gt;
+              &lt;column name=&quot;margen_ordinario_tp&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 241.0, 5283.0, 16144.0, 48124.0, Infinity)&quot;}}]]&gt;
+              &lt;/column&gt;
+              &lt;column 
+              name=&quot;saldo_medio_mensual_total_pasivo_minimo&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 83.48, 2051.88, 23263.63, Infinity)&quot;}}]]&gt;
+&lt;/column&gt;
+              &lt;column 
+              name=&quot;saldo_medio_mensual_total_pasivo_maximo&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 797.68, 5862.3, 35077.64, Infinity)&quot;}}]]&gt;
+&lt;/column&gt;
+              &lt;column 
+              name=&quot;saldo_medio_mensual_total_pasivo_desvtipica&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 129.0499, 611.3116, 2260.0956, Infinity)&quot;},&quot;outliers_std_multiplier&quot;:3.0}]]&gt;
+&lt;/column&gt;
+              &lt;column 
+              name=&quot;saldo_medio_mensual_total_pasivo_tendabsoluta12m&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, -411.77, -0.01, 0.76, 1539.18, Infinity)&quot;},&quot;outliers_std_multiplier&quot;:3.0}]]&gt;
+&lt;/column&gt;
+              &lt;column name=&quot;importe_lcp&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 300.0, 1600.0, 4000.0, Infinity)&quot;}}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;in_tenacctabk_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:3}}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;nu_ctrahorrplz_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:20}}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;im_saldmensufondinver_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 33.12, 33.3, 48.38, Infinity)&quot;}}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;im_saldmedmensutotpasv_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 512.15, 5315.03, 42695.53, Infinity)&quot;}}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;im_saldmedmensuahorrvis_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 378.74, 2717.8, 12249.2, Infinity)&quot;}}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;im_reembfondinvermes_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 3.09, 3.5, 4.37, Infinity)&quot;}}]]&gt;
+              &lt;/column&gt;
+              &lt;column name=&quot;im_totcomismes_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+                &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 0.01, 0.21, 6.88, Infinity)&quot;}}]]&gt;
+              &lt;/column&gt;
+            &lt;/schema&gt;
+          &lt;/despues&gt;
+        &lt;/discretizacion&gt;
+      &lt;/discretize&gt;
+      &lt;onehot force_checkpoint=&quot;false&quot;&gt;
+        &lt;binary&gt;true&lt;/binary&gt;
+        &lt;columns&gt;
+          cod_sexo,cod_estado_civil,segmento_valor,segmento_actividad,segmento_socioeconomico,segmento_por_relacion,segmento_marketing,clasificacion_nivel_renta,codigo_segmento_interno,IN_TenAcctaBK_MT,IN_TenFondInver_MT,IN_TenPlanPens_MT
+        &lt;/columns&gt;
+        &lt;result&gt;
+          &lt;params&gt;
+            &lt;labels&gt;
+              List(codigo_segmento_interno-&amp;gt;1.0,4.0,6.0,3.0,0.0,2.0,5.0, in_tenacctabk_mt-&amp;gt;0.0,2.0,1.0)
+            &lt;/labels&gt;
+            &lt;dimensions&gt;
+              ArrayBuffer(codigo_segmento_interno-&amp;gt;3, in_tenacctabk_mt-&amp;gt;2)
+            &lt;/dimensions&gt;
+          &lt;/params&gt;
+        &lt;/result&gt;
+      &lt;/onehot&gt;
+      &lt;standarize force_checkpoint=&quot;false&quot;&gt;
+        &lt;withMean&gt;true&lt;/withMean&gt;
+        &lt;withSTD&gt;true&lt;/withSTD&gt;
+        &lt;standarize&gt;
+          &lt;params&gt;
+            &lt;mean&gt;
+              List(0.2031163305055236, 0.15391856367163734, 2.1684861842936094, 6.315872851878687, 1.972311189172443, 2.553768563480313, 1.9886198834437105, 2.1198203058932727, 2.1770882360819175, 2.1808382408651377, 2.09904604470158, 2.2499148595852643, 0.2630360497908782, 1.4033857186042198, 2.16672215143133, 2.169370113992486, 1.084929955267802, 2.0728113173613596, 0.40877730711391214, 0.2242885513884584, 0.13402440564337453, 0.07433045195210708, 0.023349519578468852)
+            &lt;/mean&gt;
+            &lt;std&gt;
+              List(0.40231915956517844, 0.36087135900690254, 1.195194922846945, 3.341067636556047, 1.416624580575253, 1.3711749596111389, 1.4117439455188436, 1.2486673697230544, 1.17037958243918, 1.1565649170121768, 1.3707961678370848, 1.133796434255044, 0.7181331813562009, 1.023363453374962, 1.1867440563989604, 1.1946584607558606, 0.4974410650136555, 1.228049967815782, 0.4916089351275081, 0.4171137289276771, 0.3406791869954157, 0.26230840465404937, 0.15101128029321345)
+            &lt;/std&gt;
+          &lt;/params&gt;
+        &lt;/standarize&gt;
+      &lt;/standarize&gt;
+    &lt;/transformations&gt;
+&lt;/PrepareData&gt;
+  &lt;SelectClassifier 
+  file=&quot;C:\Users\A175606\workspace\commander\runs\demos\overfitting\30.SelectClassifier.xml&quot;&gt;
+    &lt;options&gt;
+      &lt;kfolds&gt;3&lt;/kfolds&gt;
+      &lt;training_rate&gt;0.75&lt;/training_rate&gt;
+      &lt;overfitting_splits&gt;0.001,0.01,0.1,0.5,1&lt;/overfitting_splits&gt;
+      &lt;nCategories&gt;6&lt;/nCategories&gt;
+      &lt;save&gt;
+        &lt;local&gt;/Users/A175606/workspace/commander/runs/demos/overfitting/&lt;/local&gt;
+        &lt;remote&gt;/user/A175606/test_overfitting&lt;/remote&gt;
+      &lt;/save&gt;
+    &lt;/options&gt;
+    &lt;data&gt;
+      &lt;input url=&quot;hdfs:/user/A175606/test_overfitting/temp.dat:repartition=12&quot;&gt;
+        &lt;columns&gt;
+          [label,posee_deposito_plazo,posee_fondos_inversion,saldofinal_pasivo_titprinc,numero_lineas_productos,comisiones_todas_titularidades_interanual,margen_financiero_titularidad_principal_interanual,margen_ordinario_tp,saldo_medio_mensual_total_pasivo_minimo,saldo_medio_mensual_total_pasivo_maximo,saldo_medio_mensual_total_pasivo_desvtipica,saldo_medio_mensual_total_pasivo_tendabsoluta12m,importe_lcp,nu_ctrahorrplz_mt,im_saldmensufondinver_mt,im_saldmedmensutotpasv_mt,im_saldmedmensuahorrvis_mt,im_reembfondinvermes_mt,im_totcomismes_mt,codigo_segmento_interno_hot_1,codigo_segmento_interno_hot_2,codigo_segmento_interno_hot_3,in_tenacctabk_mt_hot_1,in_tenacctabk_mt_hot_2]
+        &lt;/columns&gt;
+      &lt;/input&gt;
+    &lt;/data&gt;
+    &lt;models&gt;
+      &lt;model name=&quot;DT_10&quot; id=&quot;DecisionTree&quot; test_overfitting=&quot;true&quot;&gt;
+        &lt;conf&gt;
+          &lt;impurity&gt;gini&lt;/impurity&gt;
+          &lt;maxDepth&gt;10&lt;/maxDepth&gt;
+          &lt;maxBins&gt;32&lt;/maxBins&gt;
+          &lt;numClasses&gt;2&lt;/numClasses&gt;
+          &lt;useNodeIdCache&gt;false&lt;/useNodeIdCache&gt;
+        &lt;/conf&gt;
+        &lt;result&gt;
+          &lt;stats&gt;
+            &lt;Statistics&gt;
+              &lt;Accuracy&gt;0.96(0.00)&lt;/Accuracy&gt;
+              &lt;FNR&gt;0.12(0.00)&lt;/FNR&gt;
+              &lt;FPR&gt;0.03(0.00)&lt;/FPR&gt;
+              &lt;Ganancia&gt;6.09(0.03)&lt;/Ganancia&gt;
+              &lt;N&gt;75580.00(290.60)&lt;/N&gt;
+              &lt;P&gt;11531.00(71.93)&lt;/P&gt;
+              &lt;Precision&gt;0.81(0.00)&lt;/Precision&gt;
+              &lt;PrecisionExclu&gt;0.98(0.00)&lt;/PrecisionExclu&gt;
+              &lt;PrecisionMinima&gt;0.13(0.00)&lt;/PrecisionMinima&gt;
+              &lt;PrecisionMinimaExclu&gt;0.87(0.00)&lt;/PrecisionMinimaExclu&gt;
+              &lt;TNR&gt;0.97(0.00)&lt;/TNR&gt;
+              &lt;TPR&gt;0.88(0.00)&lt;/TPR&gt;
+              &lt;Tiempo&gt;9478275590.67(3204718529.78)&lt;/Tiempo&gt;
+              &lt;VolCampanha&gt;12638.67(135.24)&lt;/VolCampanha&gt;
+              &lt;VolCampaniaExclu&gt;74472.33(263.88)&lt;/VolCampaniaExclu&gt;
+            &lt;/Statistics&gt;
+          &lt;/stats&gt;
+          &lt;gd&gt;
+            {&amp;quot;series&amp;quot;:[{&amp;quot;data&amp;quot;:[[0.001,0.0],[0.01,0.011337229095006944],[0.1,0.03028852710143198],[0.5,0.03740333029194511],[1.0,0.03962214190503487]],&amp;quot;name&amp;quot;:&amp;quot;Training MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;spline&amp;quot;},{&amp;quot;data&amp;quot;:[[0.001,0.0,0.0],[0.01,0.009888968791301153,0.012785489398712735],[0.1,0.029653654120574708,0.030923400082289252],[0.5,0.03717625699201791,0.037630403591872315],[1.0,0.03942236644337796,0.039821917366691786]],&amp;quot;name&amp;quot;:&amp;quot;Margin Training MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;errorbar&amp;quot;},{&amp;quot;data&amp;quot;:[[0.001,0.0614102065492314],[0.01,0.06384462960435422],[0.1,0.05022650010769603],[0.5,0.044755822021883086],[1.0,0.043732614868665254]],&amp;quot;name&amp;quot;:&amp;quot;Test MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;spline&amp;quot;},{&amp;quot;data&amp;quot;:[[0.001,0.058322742356338,0.0644976707421248],[0.01,0.06038789303865771,0.06730136617005074],[0.1,0.0500448631876216,0.050408137027770465],[0.5,0.04447984662540914,0.045031797418357035],[1.0,0.04344087887812752,0.04402435085920299]],&amp;quot;name&amp;quot;:&amp;quot;Margin Test MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;errorbar&amp;quot;}],&amp;quot;exporting&amp;quot;:{&amp;quot;filename&amp;quot;:&amp;quot;chart&amp;quot;},&amp;quot;yAxis&amp;quot;:[{&amp;quot;title&amp;quot;:{&amp;quot;text&amp;quot;:&amp;quot;MSError&amp;quot;}}],&amp;quot;plotOptions&amp;quot;:{&amp;quot;line&amp;quot;:{&amp;quot;turboThreshold&amp;quot;:0}},&amp;quot;credits&amp;quot;:{&amp;quot;href&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;text&amp;quot;:&amp;quot;Overfitting Learning Curves&amp;quot;},&amp;quot;chart&amp;quot;:{&amp;quot;zoomType&amp;quot;:&amp;quot;xy&amp;quot;},&amp;quot;title&amp;quot;:{&amp;quot;text&amp;quot;:&amp;quot;&amp;quot;},&amp;quot;xAxis&amp;quot;:[{&amp;quot;title&amp;quot;:{&amp;quot;text&amp;quot;:&amp;quot;Training Set Size&amp;quot;}}]}
+          &lt;/gd&gt;
+        &lt;/result&gt;
+      &lt;/model&gt;
+      &lt;model name=&quot;RF_6_4&quot; id=&quot;RandomForest&quot; test_overfitting=&quot;true&quot;&gt;
+        &lt;conf&gt;
+          &lt;numTrees&gt;32&lt;/numTrees&gt;
+          &lt;featureSubsetStrategy&gt;auto&lt;/featureSubsetStrategy&gt;
+          &lt;impurity&gt;gini&lt;/impurity&gt;
+          &lt;maxDepth&gt;4&lt;/maxDepth&gt;
+          &lt;maxBins&gt;32&lt;/maxBins&gt;
+          &lt;numClasses&gt;2&lt;/numClasses&gt;
+          &lt;useNodeIdCache&gt;true&lt;/useNodeIdCache&gt;
+        &lt;/conf&gt;
+        &lt;result&gt;
+          &lt;stats&gt;
+            &lt;Statistics&gt;
+              &lt;Accuracy&gt;0.96(0.00)&lt;/Accuracy&gt;
+              &lt;FNR&gt;0.10(0.01)&lt;/FNR&gt;
+              &lt;FPR&gt;0.04(0.00)&lt;/FPR&gt;
+              &lt;Ganancia&gt;6.02(0.06)&lt;/Ganancia&gt;
+              &lt;N&gt;75580.00(290.60)&lt;/N&gt;
+              &lt;P&gt;11531.00(71.93)&lt;/P&gt;
+              &lt;Precision&gt;0.80(0.01)&lt;/Precision&gt;
+              &lt;PrecisionExclu&gt;0.98(0.00)&lt;/PrecisionExclu&gt;
+              &lt;PrecisionMinima&gt;0.13(0.00)&lt;/PrecisionMinima&gt;
+              &lt;PrecisionMinimaExclu&gt;0.87(0.00)&lt;/PrecisionMinimaExclu&gt;
+              &lt;TNR&gt;0.96(0.00)&lt;/TNR&gt;
+              &lt;TPR&gt;0.90(0.01)&lt;/TPR&gt;
+              &lt;Tiempo&gt;5953464756.00(818112177.06)&lt;/Tiempo&gt;
+              &lt;VolCampanha&gt;13039.33(315.73)&lt;/VolCampanha&gt;
+              &lt;VolCampaniaExclu&gt;74071.67(160.50)&lt;/VolCampaniaExclu&gt;
+            &lt;/Statistics&gt;
+          &lt;/stats&gt;
+          &lt;gd&gt;
+            {&amp;quot;series&amp;quot;:[{&amp;quot;data&amp;quot;:[[0.001,0.00883392805873426],[0.01,0.024621725564466197],[0.1,0.03702257591020005],[0.5,0.040773386043755716],[1.0,0.0415350096918887]],&amp;quot;name&amp;quot;:&amp;quot;Training MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;spline&amp;quot;},{&amp;quot;data&amp;quot;:[[0.001,-5.8558200187055E-4,0.01825343811933907],[0.01,0.011060953852853543,0.03818249727607885],[0.1,0.03024676442567012,0.04379838739472998],[0.5,0.037366056220458216,0.044180715867053216],[1.0,0.03960430192916164,0.043465717454615756]],&amp;quot;name&amp;quot;:&amp;quot;Margin Training MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;errorbar&amp;quot;},{&amp;quot;data&amp;quot;:[[0.001,0.05757060476278597],[0.01,0.05454187720758846],[0.1,0.04668399121497174],[0.5,0.044389926861260975],[1.0,0.043637020140514786]],&amp;quot;name&amp;quot;:&amp;quot;Test MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;spline&amp;quot;},{&amp;quot;data&amp;quot;:[[0.001,0.05289002867005932,0.06225118085551262],[0.01,0.04486345778326867,0.06422029663190826],[0.1,0.04313241982029523,0.05023556260964825],[0.5,0.043812530734070605,0.044967322988451346],[1.0,0.04337645105715468,0.04389758922387489]],&amp;quot;name&amp;quot;:&amp;quot;Margin Test MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;errorbar&amp;quot;}],&amp;quot;exporting&amp;quot;:{&amp;quot;filename&amp;quot;:&amp;quot;chart&amp;quot;},&amp;quot;yAxis&amp;quot;:[{&amp;quot;title&amp;quot;:{&amp;quot;text&amp;quot;:&amp;quot;MSError&amp;quot;}}],&amp;quot;plotOptions&amp;quot;:{&amp;quot;line&amp;quot;:{&amp;quot;turboThreshold&amp;quot;:0}},&amp;quot;credits&amp;quot;:{&amp;quot;href&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;text&amp;quot;:&amp;quot;Overfitting Learning Curves&amp;quot;},&amp;quot;chart&amp;quot;:{&amp;quot;zoomType&amp;quot;:&amp;quot;xy&amp;quot;},&amp;quot;title&amp;quot;:{&amp;quot;text&amp;quot;:&amp;quot;&amp;quot;},&amp;quot;xAxis&amp;quot;:[{&amp;quot;title&amp;quot;:{&amp;quot;text&amp;quot;:&amp;quot;Training Set Size&amp;quot;}}]}
+          &lt;/gd&gt;
+        &lt;/result&gt;
+      &lt;/model&gt;
+    &lt;/models&gt;
+&lt;/SelectClassifier&gt;
+  &lt;SelectScorer 
+  file=&quot;C:\Users\A175606\workspace\commander\runs\demos\overfitting\40.SelectScorer.xml&quot;&gt;
+    &lt;options&gt;
+      &lt;kfolds&gt;3&lt;/kfolds&gt;
+      &lt;training_rate&gt;0.75&lt;/training_rate&gt;
+      &lt;overfitting_splits&gt;0.001,0.01,0.1,0.5,1&lt;/overfitting_splits&gt;
+      &lt;nCategories&gt;6&lt;/nCategories&gt;
+      &lt;save&gt;
+        &lt;local&gt;/Users/A175606/workspace/commander/runs/demos/overfitting/&lt;/local&gt;
+        &lt;remote&gt;/user/A175606/test_overfitting&lt;/remote&gt;
+      &lt;/save&gt;
+    &lt;/options&gt;
+    &lt;data&gt;
+      &lt;input url=&quot;hdfs:/user/A175606/test_overfitting/temp.dat:repartition=12&quot;&gt;
+        &lt;columns&gt;
+          [label,posee_deposito_plazo,posee_fondos_inversion,saldofinal_pasivo_titprinc,numero_lineas_productos,comisiones_todas_titularidades_interanual,margen_financiero_titularidad_principal_interanual,margen_ordinario_tp,saldo_medio_mensual_total_pasivo_minimo,saldo_medio_mensual_total_pasivo_maximo,saldo_medio_mensual_total_pasivo_desvtipica,saldo_medio_mensual_total_pasivo_tendabsoluta12m,importe_lcp,nu_ctrahorrplz_mt,im_saldmensufondinver_mt,im_saldmedmensutotpasv_mt,im_saldmedmensuahorrvis_mt,im_reembfondinvermes_mt,im_totcomismes_mt,codigo_segmento_interno_hot_1,codigo_segmento_interno_hot_2,codigo_segmento_interno_hot_3,in_tenacctabk_mt_hot_1,in_tenacctabk_mt_hot_2]
+        &lt;/columns&gt;
+      &lt;/input&gt;
+    &lt;/data&gt;
+    &lt;models&gt;
+      &lt;model name=&quot;DT_10&quot; id=&quot;MLDecisionTreeS&quot; test_overfitting=&quot;true&quot;&gt;
+        &lt;conf&gt;
+          &lt;impurity&gt;gini&lt;/impurity&gt;
+          &lt;maxDepth&gt;10&lt;/maxDepth&gt;
+          &lt;maxBins&gt;32&lt;/maxBins&gt;
+          &lt;useNodeIdCache&gt;false&lt;/useNodeIdCache&gt;
+        &lt;/conf&gt;
+        &lt;result&gt;
+          &lt;stats&gt;
+            &lt;ScorerStatistics&gt;
+              &lt;Ganancia&gt;6.58(0.02)&lt;/Ganancia&gt;
+              &lt;NumUnos&gt;11531.00(71.93)&lt;/NumUnos&gt;
+              &lt;decil1&gt;0.77(0.01)&lt;/decil1&gt;
+              &lt;decil2&gt;0.05(0.00)&lt;/decil2&gt;
+              &lt;decil3&gt;0.02(0.00)&lt;/decil3&gt;
+              &lt;decil4&gt;0.01(0.00)&lt;/decil4&gt;
+              &lt;decil5&gt;0.01(0.00)&lt;/decil5&gt;
+              &lt;decil6&gt;0.00(0.00)&lt;/decil6&gt;
+              &lt;decil7&gt;0.00(0.00)&lt;/decil7&gt;
+              &lt;decil8&gt;0.00(0.00)&lt;/decil8&gt;
+              &lt;decil9&gt;0.00(0.00)&lt;/decil9&gt;
+            &lt;/ScorerStatistics&gt;
+          &lt;/stats&gt;
+          &lt;gd&gt;
+            {&amp;quot;series&amp;quot;:[{&amp;quot;data&amp;quot;:[[0.001,0.0],[0.01,0.007713034937983987],[0.1,0.023666253745876997],[0.5,0.02884304158680488],[1.0,0.030527212140411052]],&amp;quot;name&amp;quot;:&amp;quot;Training MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;spline&amp;quot;},{&amp;quot;data&amp;quot;:[[0.001,0.0,0.0],[0.01,0.007440654617885178,0.007985415258082796],[0.1,0.023348766924082724,0.02398374056767127],[0.5,0.028384368878116573,0.029301714295493185],[1.0,0.030437338899812493,0.03061708538100961]],&amp;quot;name&amp;quot;:&amp;quot;Margin Training MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;errorbar&amp;quot;},{&amp;quot;data&amp;quot;:[[0.001,0.07594620124458344],[0.01,0.06537277338489685],[0.1,0.04326842117012692],[0.5,0.03577123300675885],[1.0,0.03419911328894038]],&amp;quot;name&amp;quot;:&amp;quot;Test MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;spline&amp;quot;},{&amp;quot;data&amp;quot;:[[0.001,0.0679559115041962,0.08393649098497068],[0.01,0.0632906497994627,0.067454896970331],[0.1,0.042077107220205474,0.04445973512004837],[0.5,0.035388687897774655,0.036153778115743045],[1.0,0.033954828431609546,0.03444339814627122]],&amp;quot;name&amp;quot;:&amp;quot;Margin Test MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;errorbar&amp;quot;}],&amp;quot;exporting&amp;quot;:{&amp;quot;filename&amp;quot;:&amp;quot;chart&amp;quot;},&amp;quot;yAxis&amp;quot;:[{&amp;quot;title&amp;quot;:{&amp;quot;text&amp;quot;:&amp;quot;MSError&amp;quot;}}],&amp;quot;plotOptions&amp;quot;:{&amp;quot;line&amp;quot;:{&amp;quot;turboThreshold&amp;quot;:0}},&amp;quot;credits&amp;quot;:{&amp;quot;href&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;text&amp;quot;:&amp;quot;Overfitting Learning Curves&amp;quot;},&amp;quot;chart&amp;quot;:{&amp;quot;zoomType&amp;quot;:&amp;quot;xy&amp;quot;},&amp;quot;title&amp;quot;:{&amp;quot;text&amp;quot;:&amp;quot;&amp;quot;},&amp;quot;xAxis&amp;quot;:[{&amp;quot;title&amp;quot;:{&amp;quot;text&amp;quot;:&amp;quot;Training Set Size&amp;quot;}}]}
+          &lt;/gd&gt;
+        &lt;/result&gt;
+      &lt;/model&gt;
+      &lt;model name=&quot;RF_6_4&quot; id=&quot;MLRandomForestS&quot; test_overfitting=&quot;true&quot;&gt;
+        &lt;conf&gt;
+          &lt;numTrees&gt;32&lt;/numTrees&gt;
+          &lt;featureSubsetStrategy&gt;auto&lt;/featureSubsetStrategy&gt;
+          &lt;impurity&gt;gini&lt;/impurity&gt;
+          &lt;maxDepth&gt;4&lt;/maxDepth&gt;
+          &lt;maxBins&gt;32&lt;/maxBins&gt;
+          &lt;useNodeIdCache&gt;true&lt;/useNodeIdCache&gt;
+        &lt;/conf&gt;
+        &lt;result&gt;
+          &lt;stats&gt;
+            &lt;ScorerStatistics&gt;
+              &lt;Ganancia&gt;6.55(0.04)&lt;/Ganancia&gt;
+              &lt;NumUnos&gt;11531.00(71.93)&lt;/NumUnos&gt;
+              &lt;decil1&gt;0.70(0.02)&lt;/decil1&gt;
+              &lt;decil2&gt;0.08(0.01)&lt;/decil2&gt;
+              &lt;decil3&gt;0.03(0.00)&lt;/decil3&gt;
+              &lt;decil4&gt;0.02(0.00)&lt;/decil4&gt;
+              &lt;decil5&gt;0.01(0.00)&lt;/decil5&gt;
+              &lt;decil6&gt;0.01(0.00)&lt;/decil6&gt;
+              &lt;decil7&gt;0.01(0.00)&lt;/decil7&gt;
+              &lt;decil8&gt;0.01(0.00)&lt;/decil8&gt;
+              &lt;decil9&gt;0.01(0.00)&lt;/decil9&gt;
+            &lt;/ScorerStatistics&gt;
+          &lt;/stats&gt;
+          &lt;gd&gt;
+            {&amp;quot;series&amp;quot;:[{&amp;quot;data&amp;quot;:[[0.001,0.007516042176560669],[0.01,0.019098980962623458],[0.1,0.028774356983034],[0.5,0.03187696205474338],[1.0,0.03258040029976538]],&amp;quot;name&amp;quot;:&amp;quot;Training MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;spline&amp;quot;},{&amp;quot;data&amp;quot;:[[0.001,-5.708781930529993E-4,0.015602962546174338],[0.01,0.0076686287969602585,0.030529333128286658],[0.1,0.0236354402248947,0.0339132737411733],[0.5,0.028824865597086666,0.034929058512400094],[1.0,0.030426662750775584,0.034734137848755176]],&amp;quot;name&amp;quot;:&amp;quot;Margin Training MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;errorbar&amp;quot;},{&amp;quot;data&amp;quot;:[[0.001,0.057173392730671235],[0.01,0.05036509857341038],[0.1,0.038907808491020685],[0.5,0.03529061544222885],[1.0,0.03445543178927308]],&amp;quot;name&amp;quot;:&amp;quot;Test MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;spline&amp;quot;},{&amp;quot;data&amp;quot;:[[0.001,0.03754989097353954,0.07679689448780293],[0.01,0.03528111931721632,0.06544907782960444],[0.1,0.03446088071012908,0.04335473627191229],[0.5,0.034651705372126064,0.03592952551233163],[1.0,0.033988973217959545,0.03492189036058661]],&amp;quot;name&amp;quot;:&amp;quot;Margin Test MSE&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;errorbar&amp;quot;}],&amp;quot;exporting&amp;quot;:{&amp;quot;filename&amp;quot;:&amp;quot;chart&amp;quot;},&amp;quot;yAxis&amp;quot;:[{&amp;quot;title&amp;quot;:{&amp;quot;text&amp;quot;:&amp;quot;MSError&amp;quot;}}],&amp;quot;plotOptions&amp;quot;:{&amp;quot;line&amp;quot;:{&amp;quot;turboThreshold&amp;quot;:0}},&amp;quot;credits&amp;quot;:{&amp;quot;href&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;text&amp;quot;:&amp;quot;Overfitting Learning Curves&amp;quot;},&amp;quot;chart&amp;quot;:{&amp;quot;zoomType&amp;quot;:&amp;quot;xy&amp;quot;},&amp;quot;title&amp;quot;:{&amp;quot;text&amp;quot;:&amp;quot;&amp;quot;},&amp;quot;xAxis&amp;quot;:[{&amp;quot;title&amp;quot;:{&amp;quot;text&amp;quot;:&amp;quot;Training Set Size&amp;quot;}}]}
+          &lt;/gd&gt;
+        &lt;/result&gt;
+      &lt;/model&gt;
+    &lt;/models&gt;
+&lt;/SelectScorer&gt;
+&lt;/result&gt;
+</code></pre>
+</div>
+</div> <!-- col -->
+</div> <!-- row -->
+
+<div class="row">
+  <div class="col-md-12" > 
+  <ul id="tree1">
+		<li> LoadData
+		<ul>
+			<li><a style="overflow-wrap:break-word;">File: C:\Users\A175606\workspace\commander\runs\demos\overfitting\10.LoadData.xml</a></li>
+  			<li>Data: <ul> 
+   	<li>Output <ul>
+      <li><a style="overflow-wrap:break-word;">memory:k1</a></li>
+      </ul></li>
+    </ul></li>
+  			  		</ul>
+  	</li>
+		<li> PrepareData
+		<ul>
+			<li><a style="overflow-wrap:break-word;">File: C:\Users\A175606\workspace\commander\runs\demos\overfitting\20.ProcessData.xml</a></li>
+  			<li>Data: <ul> 
+   	<li>Input <ul>
+      <li><a style="overflow-wrap:break-word;">lcsv:/Users/A175606/workspace/commander/runs/demos/overfitting//data.csv</a></li>
+      </ul></li><li>Output <ul>
+      <li><a style="overflow-wrap:break-word;">hdfs:/user/A175606/test_overfitting/temp.dat</a></li>
+      </ul></li>
+    </ul></li>
+  			
+<li> Transforms
+	<ul>
+			<li><a href="#" class="withData">remove_outliers</a>		
+			<div class="dataDiv collapse">
+			<pre><code class="xml">
+&lt;remove_outliers force_checkpoint=&quot;false&quot;&gt;
+  &lt;columns&gt;all&lt;/columns&gt;
+  &lt;times&gt;3.0&lt;/times&gt;
+  &lt;max_percentage_of_outliers&gt;0.05&lt;/max_percentage_of_outliers&gt;
+  &lt;params&gt;
+    &lt;columns&gt;
+      saldofinal_pasivo_titprinc;saldo_medio_mensual_total_pasivo_desvtipica;saldo_medio_mensual_total_pasivo_tendabsoluta12m
+    &lt;/columns&gt;
+    &lt;lines_removed&gt; 181 &lt;/lines_removed&gt;
+  &lt;/params&gt;
+&lt;/remove_outliers&gt;
+			</code></pre>
+			</div>
+		</li>
+			<li><a href="#" class="withData">discretize</a>		
+			<div class="dataDiv collapse">
+			<pre><code class="xml">
+&lt;discretize force_checkpoint=&quot;false&quot;&gt;
+  &lt;limit&gt;50&lt;/limit&gt;
+  &lt;nCategories&gt;5&lt;/nCategories&gt;
+  &lt;discretizacion&gt;
+    &lt;antes&gt;
+      &lt;schema&gt;
+        &lt;column name=&quot;codigo_segmento_interno&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:7}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;posee_deposito_plazo&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:2}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;posee_fondos_inversion&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:2}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;saldofinal_pasivo_titprinc&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:177178}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;numero_lineas_productos&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:23}]]&gt;
+        &lt;/column&gt;
+        &lt;column 
+        name=&quot;comisiones_todas_titularidades_interanual&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:59391}]]&gt;
+&lt;/column&gt;
+        &lt;column 
+        name=&quot;margen_financiero_titularidad_principal_interanual&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:78048}]]&gt;
+&lt;/column&gt;
+        &lt;column name=&quot;margen_ordinario_tp&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:90535}]]&gt;
+        &lt;/column&gt;
+        &lt;column 
+        name=&quot;saldo_medio_mensual_total_pasivo_minimo&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:159561}]]&gt;
+&lt;/column&gt;
+        &lt;column 
+        name=&quot;saldo_medio_mensual_total_pasivo_maximo&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:181541}]]&gt;
+&lt;/column&gt;
+        &lt;column 
+        name=&quot;saldo_medio_mensual_total_pasivo_desvtipica&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:195077}]]&gt;
+&lt;/column&gt;
+        &lt;column 
+        name=&quot;saldo_medio_mensual_total_pasivo_tendabsoluta12m&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:155839}]]&gt;
+&lt;/column&gt;
+        &lt;column name=&quot;importe_lcp&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:829}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;in_tenacctabk_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:3}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;nu_ctrahorrplz_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:20}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;im_saldmensufondinver_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:34010}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;im_saldmedmensutotpasv_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:183152}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;im_saldmedmensuahorrvis_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:174430}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;im_reembfondinvermes_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:5224}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;im_totcomismes_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;dif_values&quot;:12897}]]&gt;
+        &lt;/column&gt;
+      &lt;/schema&gt;
+    &lt;/antes&gt;
+    &lt;despues&gt;
+      &lt;schema&gt;
+        &lt;column name=&quot;codigo_segmento_interno&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:7}}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;posee_deposito_plazo&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;posee_fondos_inversion&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;saldofinal_pasivo_titprinc&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 51273.0, 436807.0, 3198280.0, Infinity)&quot;},&quot;outliers_std_multiplier&quot;:3.0}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;numero_lineas_productos&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:23}}]]&gt;
+        &lt;/column&gt;
+        &lt;column 
+        name=&quot;comisiones_todas_titularidades_interanual&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 60.0, 2516.0, 6924.0, 20216.0, Infinity)&quot;}}]]&gt;
+&lt;/column&gt;
+        &lt;column 
+        name=&quot;margen_financiero_titularidad_principal_interanual&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, -107.0, -1.0, 0.0, 4542.0, Infinity)&quot;}}]]&gt;
+&lt;/column&gt;
+        &lt;column name=&quot;margen_ordinario_tp&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 241.0, 5283.0, 16144.0, 48124.0, Infinity)&quot;}}]]&gt;
+        &lt;/column&gt;
+        &lt;column 
+        name=&quot;saldo_medio_mensual_total_pasivo_minimo&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 83.48, 2051.88, 23263.63, Infinity)&quot;}}]]&gt;
+&lt;/column&gt;
+        &lt;column 
+        name=&quot;saldo_medio_mensual_total_pasivo_maximo&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 797.68, 5862.3, 35077.64, Infinity)&quot;}}]]&gt;
+&lt;/column&gt;
+        &lt;column 
+        name=&quot;saldo_medio_mensual_total_pasivo_desvtipica&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 129.0499, 611.3116, 2260.0956, Infinity)&quot;},&quot;outliers_std_multiplier&quot;:3.0}]]&gt;
+&lt;/column&gt;
+        &lt;column 
+        name=&quot;saldo_medio_mensual_total_pasivo_tendabsoluta12m&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, -411.77, -0.01, 0.76, 1539.18, Infinity)&quot;},&quot;outliers_std_multiplier&quot;:3.0}]]&gt;
+&lt;/column&gt;
+        &lt;column name=&quot;importe_lcp&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 300.0, 1600.0, 4000.0, Infinity)&quot;}}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;in_tenacctabk_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:3}}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;nu_ctrahorrplz_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:20}}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;im_saldmensufondinver_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 33.12, 33.3, 48.38, Infinity)&quot;}}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;im_saldmedmensutotpasv_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 512.15, 5315.03, 42695.53, Infinity)&quot;}}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;im_saldmedmensuahorrvis_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 378.74, 2717.8, 12249.2, Infinity)&quot;}}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;im_reembfondinvermes_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 3.09, 3.5, 4.37, Infinity)&quot;}}]]&gt;
+        &lt;/column&gt;
+        &lt;column name=&quot;im_totcomismes_mt&quot; dataType=&quot;double&quot; nullable=&quot;true&quot;&gt;
+          &lt;![CDATA[{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 0.01, 0.21, 6.88, Infinity)&quot;}}]]&gt;
+        &lt;/column&gt;
+      &lt;/schema&gt;
+    &lt;/despues&gt;
+  &lt;/discretizacion&gt;
+&lt;/discretize&gt;
+			</code></pre>
+			</div>
+		</li>
+			<li><a href="#" class="withData">onehot</a>		
+			<div class="dataDiv collapse">
+			<pre><code class="xml">
+&lt;onehot force_checkpoint=&quot;false&quot;&gt;
+  &lt;binary&gt;true&lt;/binary&gt;
+  &lt;columns&gt;
+    cod_sexo,cod_estado_civil,segmento_valor,segmento_actividad,segmento_socioeconomico,segmento_por_relacion,segmento_marketing,clasificacion_nivel_renta,codigo_segmento_interno,IN_TenAcctaBK_MT,IN_TenFondInver_MT,IN_TenPlanPens_MT
+  &lt;/columns&gt;
+  &lt;result&gt;
+    &lt;params&gt;
+      &lt;labels&gt;
+        List(codigo_segmento_interno-&amp;gt;1.0,4.0,6.0,3.0,0.0,2.0,5.0, in_tenacctabk_mt-&amp;gt;0.0,2.0,1.0)
+      &lt;/labels&gt;
+      &lt;dimensions&gt;
+        ArrayBuffer(codigo_segmento_interno-&amp;gt;3, in_tenacctabk_mt-&amp;gt;2)
+      &lt;/dimensions&gt;
+    &lt;/params&gt;
+  &lt;/result&gt;
+&lt;/onehot&gt;
+			</code></pre>
+			</div>
+		</li>
+			<li><a href="#" class="withData">standarize</a>		
+			<div class="dataDiv collapse">
+			<pre><code class="xml">
+&lt;standarize force_checkpoint=&quot;false&quot;&gt;
+  &lt;withMean&gt;true&lt;/withMean&gt;
+  &lt;withSTD&gt;true&lt;/withSTD&gt;
+  &lt;standarize&gt;
+    &lt;params&gt;
+      &lt;mean&gt;
+        List(0.2031163305055236, 0.15391856367163734, 2.1684861842936094, 6.315872851878687, 1.972311189172443, 2.553768563480313, 1.9886198834437105, 2.1198203058932727, 2.1770882360819175, 2.1808382408651377, 2.09904604470158, 2.2499148595852643, 0.2630360497908782, 1.4033857186042198, 2.16672215143133, 2.169370113992486, 1.084929955267802, 2.0728113173613596, 0.40877730711391214, 0.2242885513884584, 0.13402440564337453, 0.07433045195210708, 0.023349519578468852)
+      &lt;/mean&gt;
+      &lt;std&gt;
+        List(0.40231915956517844, 0.36087135900690254, 1.195194922846945, 3.341067636556047, 1.416624580575253, 1.3711749596111389, 1.4117439455188436, 1.2486673697230544, 1.17037958243918, 1.1565649170121768, 1.3707961678370848, 1.133796434255044, 0.7181331813562009, 1.023363453374962, 1.1867440563989604, 1.1946584607558606, 0.4974410650136555, 1.228049967815782, 0.4916089351275081, 0.4171137289276771, 0.3406791869954157, 0.26230840465404937, 0.15101128029321345)
+      &lt;/std&gt;
+    &lt;/params&gt;
+  &lt;/standarize&gt;
+&lt;/standarize&gt;
+			</code></pre>
+			</div>
+		</li>
+		</ul>
+</li>
+  		</ul>
+  	</li>
+		<li> SelectClassifier
+		<ul>
+			<li><a style="overflow-wrap:break-word;">File: C:\Users\A175606\workspace\commander\runs\demos\overfitting\30.SelectClassifier.xml</a></li>
+  			<li>Data: <ul> 
+   	<li>Input <ul>
+      <li><a style="overflow-wrap:break-word;">hdfs:/user/A175606/test_overfitting/temp.dat:repartition=12</a></li>
+      </ul></li>
+    </ul></li>
+  			<li> Models
+	<ul>
+			<li><a href="#" class="withData">Model:DT_10 Type: DecisionTree</a>
+			<div class="dataDiv collapse">
+			<pre><code class="xml">
+&lt;conf&gt;
+  &lt;impurity&gt;gini&lt;/impurity&gt;
+  &lt;maxDepth&gt;10&lt;/maxDepth&gt;
+  &lt;maxBins&gt;32&lt;/maxBins&gt;
+  &lt;numClasses&gt;2&lt;/numClasses&gt;
+  &lt;useNodeIdCache&gt;false&lt;/useNodeIdCache&gt;
+&lt;/conf&gt;
+			
+&lt;stats&gt;
+  &lt;Statistics&gt;
+    &lt;Accuracy&gt;0.96(0.00)&lt;/Accuracy&gt;
+    &lt;FNR&gt;0.12(0.00)&lt;/FNR&gt;
+    &lt;FPR&gt;0.03(0.00)&lt;/FPR&gt;
+    &lt;Ganancia&gt;6.09(0.03)&lt;/Ganancia&gt;
+    &lt;N&gt;75580.00(290.60)&lt;/N&gt;
+    &lt;P&gt;11531.00(71.93)&lt;/P&gt;
+    &lt;Precision&gt;0.81(0.00)&lt;/Precision&gt;
+    &lt;PrecisionExclu&gt;0.98(0.00)&lt;/PrecisionExclu&gt;
+    &lt;PrecisionMinima&gt;0.13(0.00)&lt;/PrecisionMinima&gt;
+    &lt;PrecisionMinimaExclu&gt;0.87(0.00)&lt;/PrecisionMinimaExclu&gt;
+    &lt;TNR&gt;0.97(0.00)&lt;/TNR&gt;
+    &lt;TPR&gt;0.88(0.00)&lt;/TPR&gt;
+    &lt;Tiempo&gt;9478275590.67(3204718529.78)&lt;/Tiempo&gt;
+    &lt;VolCampanha&gt;12638.67(135.24)&lt;/VolCampanha&gt;
+    &lt;VolCampaniaExclu&gt;74472.33(263.88)&lt;/VolCampaniaExclu&gt;
+  &lt;/Statistics&gt;
+&lt;/stats&gt;				
+						</code></pre>
+			</div>
+		
+			<div class="imgDiv collapse">
+				<a hidden>{&quot;series&quot;:[{&quot;data&quot;:[[0.001,0.0],[0.01,0.011337229095006944],[0.1,0.03028852710143198],[0.5,0.03740333029194511],[1.0,0.03962214190503487]],&quot;name&quot;:&quot;Training MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,0.0,0.0],[0.01,0.009888968791301153,0.012785489398712735],[0.1,0.029653654120574708,0.030923400082289252],[0.5,0.03717625699201791,0.037630403591872315],[1.0,0.03942236644337796,0.039821917366691786]],&quot;name&quot;:&quot;Margin Training MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;},{&quot;data&quot;:[[0.001,0.0614102065492314],[0.01,0.06384462960435422],[0.1,0.05022650010769603],[0.5,0.044755822021883086],[1.0,0.043732614868665254]],&quot;name&quot;:&quot;Test MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,0.058322742356338,0.0644976707421248],[0.01,0.06038789303865771,0.06730136617005074],[0.1,0.0500448631876216,0.050408137027770465],[0.5,0.04447984662540914,0.045031797418357035],[1.0,0.04344087887812752,0.04402435085920299]],&quot;name&quot;:&quot;Margin Test MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;MSError&quot;}}],&quot;plotOptions&quot;:{&quot;line&quot;:{&quot;turboThreshold&quot;:0}},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;Overfitting Learning Curves&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;},&quot;xAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;Training Set Size&quot;}}]}</a>
+				<div id="img_container"></div>
+			</div>
+				</li>
+			<li><a href="#" class="withData">Model:RF_6_4 Type: RandomForest</a>
+			<div class="dataDiv collapse">
+			<pre><code class="xml">
+&lt;conf&gt;
+  &lt;numTrees&gt;32&lt;/numTrees&gt;
+  &lt;featureSubsetStrategy&gt;auto&lt;/featureSubsetStrategy&gt;
+  &lt;impurity&gt;gini&lt;/impurity&gt;
+  &lt;maxDepth&gt;4&lt;/maxDepth&gt;
+  &lt;maxBins&gt;32&lt;/maxBins&gt;
+  &lt;numClasses&gt;2&lt;/numClasses&gt;
+  &lt;useNodeIdCache&gt;true&lt;/useNodeIdCache&gt;
+&lt;/conf&gt;
+			
+&lt;stats&gt;
+  &lt;Statistics&gt;
+    &lt;Accuracy&gt;0.96(0.00)&lt;/Accuracy&gt;
+    &lt;FNR&gt;0.10(0.01)&lt;/FNR&gt;
+    &lt;FPR&gt;0.04(0.00)&lt;/FPR&gt;
+    &lt;Ganancia&gt;6.02(0.06)&lt;/Ganancia&gt;
+    &lt;N&gt;75580.00(290.60)&lt;/N&gt;
+    &lt;P&gt;11531.00(71.93)&lt;/P&gt;
+    &lt;Precision&gt;0.80(0.01)&lt;/Precision&gt;
+    &lt;PrecisionExclu&gt;0.98(0.00)&lt;/PrecisionExclu&gt;
+    &lt;PrecisionMinima&gt;0.13(0.00)&lt;/PrecisionMinima&gt;
+    &lt;PrecisionMinimaExclu&gt;0.87(0.00)&lt;/PrecisionMinimaExclu&gt;
+    &lt;TNR&gt;0.96(0.00)&lt;/TNR&gt;
+    &lt;TPR&gt;0.90(0.01)&lt;/TPR&gt;
+    &lt;Tiempo&gt;5953464756.00(818112177.06)&lt;/Tiempo&gt;
+    &lt;VolCampanha&gt;13039.33(315.73)&lt;/VolCampanha&gt;
+    &lt;VolCampaniaExclu&gt;74071.67(160.50)&lt;/VolCampaniaExclu&gt;
+  &lt;/Statistics&gt;
+&lt;/stats&gt;				
+						</code></pre>
+			</div>
+		
+			<div class="imgDiv collapse">
+				<a hidden>{&quot;series&quot;:[{&quot;data&quot;:[[0.001,0.00883392805873426],[0.01,0.024621725564466197],[0.1,0.03702257591020005],[0.5,0.040773386043755716],[1.0,0.0415350096918887]],&quot;name&quot;:&quot;Training MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,-5.8558200187055E-4,0.01825343811933907],[0.01,0.011060953852853543,0.03818249727607885],[0.1,0.03024676442567012,0.04379838739472998],[0.5,0.037366056220458216,0.044180715867053216],[1.0,0.03960430192916164,0.043465717454615756]],&quot;name&quot;:&quot;Margin Training MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;},{&quot;data&quot;:[[0.001,0.05757060476278597],[0.01,0.05454187720758846],[0.1,0.04668399121497174],[0.5,0.044389926861260975],[1.0,0.043637020140514786]],&quot;name&quot;:&quot;Test MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,0.05289002867005932,0.06225118085551262],[0.01,0.04486345778326867,0.06422029663190826],[0.1,0.04313241982029523,0.05023556260964825],[0.5,0.043812530734070605,0.044967322988451346],[1.0,0.04337645105715468,0.04389758922387489]],&quot;name&quot;:&quot;Margin Test MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;MSError&quot;}}],&quot;plotOptions&quot;:{&quot;line&quot;:{&quot;turboThreshold&quot;:0}},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;Overfitting Learning Curves&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;},&quot;xAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;Training Set Size&quot;}}]}</a>
+				<div id="img_container"></div>
+			</div>
+				</li>
+		<li class=""><a href="#" class="withData">Summary</a>
+		<div class="">
+		<table class="table table-striped table-bordered table-sm stats hover">
+			<thead class="thead-inverse">
+			<tr scope="row">
+				<th>Model ID</th>
+				<th>Ganancia</th>
+				<th>Accuracy</th>
+				<th>Precision</th>
+				<th>PrecisionMinima</th>
+				<th>PrecisionExclu</th>
+				<th>PrecisionMinimaExclu</th>
+				<th>VolCampanha</th>
+				<th>VolCampaniaExclu</th>
+				<th>N</th>
+				<th>P</th>
+				<th>FPR</th>
+				<th>FNR</th>
+				<th>TPR</th>
+				<th>TNR</th>
+				<th>Tiempo</th>
+			</tr>
+			</thead>
+			<tbody>
+						<tr scope="row">
+				<td>DT_10</td>
+				
+										<td>6.09(0.03)</td>
+					<td>0.96(0.00)</td>
+					<td>0.81(0.00)</td>
+					<td>0.13(0.00)</td>
+					<td>0.98(0.00)</td>
+					<td>0.87(0.00)</td>
+					<td>12638.67(135.24)</td>
+					<td>74472.33(263.88)</td>
+					<td>75580.00(290.60)</td>
+					<td>11531.00(71.93)</td>
+					<td>0.03(0.00)</td>
+					<td>0.12(0.00)</td>
+					<td>0.88(0.00)</td>
+					<td>0.97(0.00)</td>
+					<td>9478275590.67(3204718529.78)</td>
+							</tr>
+						<tr scope="row">
+				<td>RF_6_4</td>
+				
+										<td>6.02(0.06)</td>
+					<td>0.96(0.00)</td>
+					<td>0.80(0.01)</td>
+					<td>0.13(0.00)</td>
+					<td>0.98(0.00)</td>
+					<td>0.87(0.00)</td>
+					<td>13039.33(315.73)</td>
+					<td>74071.67(160.50)</td>
+					<td>75580.00(290.60)</td>
+					<td>11531.00(71.93)</td>
+					<td>0.04(0.00)</td>
+					<td>0.10(0.01)</td>
+					<td>0.90(0.01)</td>
+					<td>0.96(0.00)</td>
+					<td>5953464756.00(818112177.06)</td>
+							</tr>
+						</tbody>
+		</table>
+		</div>
+	</li>
+	
+	</ul>
+</li>
+
+
+  		</ul>
+  	</li>
+		<li> SelectScorer
+		<ul>
+			<li><a style="overflow-wrap:break-word;">File: C:\Users\A175606\workspace\commander\runs\demos\overfitting\40.SelectScorer.xml</a></li>
+  			<li>Data: <ul> 
+   	<li>Input <ul>
+      <li><a style="overflow-wrap:break-word;">hdfs:/user/A175606/test_overfitting/temp.dat:repartition=12</a></li>
+      </ul></li>
+    </ul></li>
+  			<li> Models
+	<ul>
+			<li><a href="#" class="withData">Model:DT_10 Type: MLDecisionTreeS</a>
+			<div class="dataDiv collapse">
+			<pre><code class="xml">
+&lt;conf&gt;
+  &lt;impurity&gt;gini&lt;/impurity&gt;
+  &lt;maxDepth&gt;10&lt;/maxDepth&gt;
+  &lt;maxBins&gt;32&lt;/maxBins&gt;
+  &lt;useNodeIdCache&gt;false&lt;/useNodeIdCache&gt;
+&lt;/conf&gt;
+			
+&lt;stats&gt;
+  &lt;ScorerStatistics&gt;
+    &lt;Ganancia&gt;6.58(0.02)&lt;/Ganancia&gt;
+    &lt;NumUnos&gt;11531.00(71.93)&lt;/NumUnos&gt;
+    &lt;decil1&gt;0.77(0.01)&lt;/decil1&gt;
+    &lt;decil2&gt;0.05(0.00)&lt;/decil2&gt;
+    &lt;decil3&gt;0.02(0.00)&lt;/decil3&gt;
+    &lt;decil4&gt;0.01(0.00)&lt;/decil4&gt;
+    &lt;decil5&gt;0.01(0.00)&lt;/decil5&gt;
+    &lt;decil6&gt;0.00(0.00)&lt;/decil6&gt;
+    &lt;decil7&gt;0.00(0.00)&lt;/decil7&gt;
+    &lt;decil8&gt;0.00(0.00)&lt;/decil8&gt;
+    &lt;decil9&gt;0.00(0.00)&lt;/decil9&gt;
+  &lt;/ScorerStatistics&gt;
+&lt;/stats&gt;				
+						</code></pre>
+			</div>
+		
+			<div class="imgDiv collapse">
+				<a hidden>{&quot;series&quot;:[{&quot;data&quot;:[[0.001,0.0],[0.01,0.007713034937983987],[0.1,0.023666253745876997],[0.5,0.02884304158680488],[1.0,0.030527212140411052]],&quot;name&quot;:&quot;Training MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,0.0,0.0],[0.01,0.007440654617885178,0.007985415258082796],[0.1,0.023348766924082724,0.02398374056767127],[0.5,0.028384368878116573,0.029301714295493185],[1.0,0.030437338899812493,0.03061708538100961]],&quot;name&quot;:&quot;Margin Training MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;},{&quot;data&quot;:[[0.001,0.07594620124458344],[0.01,0.06537277338489685],[0.1,0.04326842117012692],[0.5,0.03577123300675885],[1.0,0.03419911328894038]],&quot;name&quot;:&quot;Test MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,0.0679559115041962,0.08393649098497068],[0.01,0.0632906497994627,0.067454896970331],[0.1,0.042077107220205474,0.04445973512004837],[0.5,0.035388687897774655,0.036153778115743045],[1.0,0.033954828431609546,0.03444339814627122]],&quot;name&quot;:&quot;Margin Test MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;MSError&quot;}}],&quot;plotOptions&quot;:{&quot;line&quot;:{&quot;turboThreshold&quot;:0}},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;Overfitting Learning Curves&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;},&quot;xAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;Training Set Size&quot;}}]}</a>
+				<div id="img_container"></div>
+			</div>
+				</li>
+			<li><a href="#" class="withData">Model:RF_6_4 Type: MLRandomForestS</a>
+			<div class="dataDiv collapse">
+			<pre><code class="xml">
+&lt;conf&gt;
+  &lt;numTrees&gt;32&lt;/numTrees&gt;
+  &lt;featureSubsetStrategy&gt;auto&lt;/featureSubsetStrategy&gt;
+  &lt;impurity&gt;gini&lt;/impurity&gt;
+  &lt;maxDepth&gt;4&lt;/maxDepth&gt;
+  &lt;maxBins&gt;32&lt;/maxBins&gt;
+  &lt;useNodeIdCache&gt;true&lt;/useNodeIdCache&gt;
+&lt;/conf&gt;
+			
+&lt;stats&gt;
+  &lt;ScorerStatistics&gt;
+    &lt;Ganancia&gt;6.55(0.04)&lt;/Ganancia&gt;
+    &lt;NumUnos&gt;11531.00(71.93)&lt;/NumUnos&gt;
+    &lt;decil1&gt;0.70(0.02)&lt;/decil1&gt;
+    &lt;decil2&gt;0.08(0.01)&lt;/decil2&gt;
+    &lt;decil3&gt;0.03(0.00)&lt;/decil3&gt;
+    &lt;decil4&gt;0.02(0.00)&lt;/decil4&gt;
+    &lt;decil5&gt;0.01(0.00)&lt;/decil5&gt;
+    &lt;decil6&gt;0.01(0.00)&lt;/decil6&gt;
+    &lt;decil7&gt;0.01(0.00)&lt;/decil7&gt;
+    &lt;decil8&gt;0.01(0.00)&lt;/decil8&gt;
+    &lt;decil9&gt;0.01(0.00)&lt;/decil9&gt;
+  &lt;/ScorerStatistics&gt;
+&lt;/stats&gt;				
+						</code></pre>
+			</div>
+		
+			<div class="imgDiv collapse">
+				<a hidden>{&quot;series&quot;:[{&quot;data&quot;:[[0.001,0.007516042176560669],[0.01,0.019098980962623458],[0.1,0.028774356983034],[0.5,0.03187696205474338],[1.0,0.03258040029976538]],&quot;name&quot;:&quot;Training MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,-5.708781930529993E-4,0.015602962546174338],[0.01,0.0076686287969602585,0.030529333128286658],[0.1,0.0236354402248947,0.0339132737411733],[0.5,0.028824865597086666,0.034929058512400094],[1.0,0.030426662750775584,0.034734137848755176]],&quot;name&quot;:&quot;Margin Training MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;},{&quot;data&quot;:[[0.001,0.057173392730671235],[0.01,0.05036509857341038],[0.1,0.038907808491020685],[0.5,0.03529061544222885],[1.0,0.03445543178927308]],&quot;name&quot;:&quot;Test MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,0.03754989097353954,0.07679689448780293],[0.01,0.03528111931721632,0.06544907782960444],[0.1,0.03446088071012908,0.04335473627191229],[0.5,0.034651705372126064,0.03592952551233163],[1.0,0.033988973217959545,0.03492189036058661]],&quot;name&quot;:&quot;Margin Test MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;MSError&quot;}}],&quot;plotOptions&quot;:{&quot;line&quot;:{&quot;turboThreshold&quot;:0}},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;Overfitting Learning Curves&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;},&quot;xAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;Training Set Size&quot;}}]}</a>
+				<div id="img_container"></div>
+			</div>
+				</li>
+		<li class=""><a href="#" class="withData">Summary</a>
+		<div class="">
+		<table class="table table-striped table-bordered table-sm stats hover">
+			<thead class="thead-inverse">
+			<tr scope="row">
+				<th>Model ID</th>
+				<th>Ganancia</th>
+				<th>NumUnos</th>
+				<th>decil1</th>
+				<th>decil2</th>
+				<th>decil3</th>
+				<th>decil4</th>
+				<th>decil5</th>
+				<th>decil6</th>
+				<th>decil7</th>
+				<th>decil8</th>
+				<th>decil9</th>
+			</tr>
+			</thead>
+			<tbody>
+						<tr scope="row">
+				<td>DT_10</td>
+				
+										<td>6.58(0.02)</td>
+					<td>11531.00(71.93)</td>
+					<td>0.77(0.01)</td>
+					<td>0.05(0.00)</td>
+					<td>0.02(0.00)</td>
+					<td>0.01(0.00)</td>
+					<td>0.01(0.00)</td>
+					<td>0.00(0.00)</td>
+					<td>0.00(0.00)</td>
+					<td>0.00(0.00)</td>
+					<td>0.00(0.00)</td>
+							</tr>
+						<tr scope="row">
+				<td>RF_6_4</td>
+				
+										<td>6.55(0.04)</td>
+					<td>11531.00(71.93)</td>
+					<td>0.70(0.02)</td>
+					<td>0.08(0.01)</td>
+					<td>0.03(0.00)</td>
+					<td>0.02(0.00)</td>
+					<td>0.01(0.00)</td>
+					<td>0.01(0.00)</td>
+					<td>0.01(0.00)</td>
+					<td>0.01(0.00)</td>
+					<td>0.01(0.00)</td>
+							</tr>
+						</tbody>
+		</table>
+		</div>
+	</li>
+	
+	</ul>
+</li>
+
+
+  		</ul>
+  	</li>
+		</ul>
+  </div>
+  <!--div class="col-md-8">
+  	<div class="row">
+      	<div class="col-md-12" id="data_container"></div>
+    </div>
+    <div class="row">
+      	<div class="col-md-12" id="stats_container"></div>
+    </div>
+    <div class="row">  	
+  		<div class="col-md-12" id="img_container"></div>
+    </div>
+  </div-->
+</div>
+
+
+
+
+
+<script>
+$('#tree1').treed({openedClass:'glyphicon-chevron-right', closedClass:'glyphicon-chevron-down'});
+</script>
+<script>
+/* TODO: Mejorar metodo para q se puedna pintar varios highcharts*/
+	function print_chart( container, data_id ){
+    	var data = $.parseJSON( unescape( $(data_id).html() ) );
+        $(container).highcharts(data);
+	}
+
+/*	$('.withData').click(function(e){
+    	e.preventDefault();
+	 	var me = $(this);
+     	var dataContent = me.find('.dataDiv').html();
+		var statsContent = me.find('.statsDiv').html();
+		var imgContent = me.find('.imgDiv').html();
+
+     	if(dataContent) { $("#data_container").html(dataContent) } else $("#data_container").empty();
+     	if(statsContent) { $("#stats_container").html(statsContent) } else $("#stats_container").empty();
+     	if(imgContent) { print_chart( "#img_container", me.find('.imgDiv') ) } else $("#img_container").empty();
+	});
+*/
+
+	$('.withData').click(function(e){
+    	e.preventDefault();
+	 	var me = $(this);
+		me.parent().children("div").collapse("toggle")
+	});
+
+</script>
+
+
+
+
+
+
+	</div>
+	<footer class="footer">
+		<div class="container">
+    		<p><a href='mailto:alago@modelicious.com,lsanchezm@modelicious.com'>Support</a></p>
+		</div>
+	</footer>
+	<script>hljs.initHighlightingOnLoad();</script>
+	<script>$(document).ready(function() {
+    			$('.stats').DataTable();
+    			
+    			$('.imgDiv').each( function() {
+
+    				var item= $(this)
+    				 console.log( item.html() )
+    				var data = $.parseJSON( unescape( item.find('a').html().trim() ) );
+    				item.find("div").highcharts(data);
+        		})
+    			
+			} );
+	</script>
+</body>
+</html>

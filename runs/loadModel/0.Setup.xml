@@ -1,0 +1,13 @@
+<spark App="ModelsTemplate" Master="yarn-client" base="/user/A181345/prueba_carga_modelo" checkpointFolder="cache" logLevel="WARN">
+	<settings>
+		<setting name="spark.executor.memory">8g</setting>
+		<setting name="spark.executor.cores">4</setting>
+		<setting name="spark.executor.instances">60</setting>
+		<setting name="spark.logLineage">true</setting>
+	</settings>
+	<notifications>
+		<enabled>true</enabled>
+		<email>alago@modelicious.com</email>
+	</notifications>
+	
+</spark>

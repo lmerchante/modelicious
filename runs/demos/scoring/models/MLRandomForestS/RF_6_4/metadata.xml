@@ -1,0 +1,8 @@
+<conf model="MLRandomForestS">
+  <numTrees>32</numTrees>
+  <featureSubsetStrategy>auto</featureSubsetStrategy>
+  <impurity>gini</impurity>
+  <maxDepth>4</maxDepth>
+  <maxBins>32</maxBins>
+  <useNodeIdCache>true</useNodeIdCache>
+</conf>

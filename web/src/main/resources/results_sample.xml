@@ -1,0 +1,684 @@
+<?xml version="1.0" ?>
+<result>
+	<PrepareData
+		file="j:\BigData\XLuisFco\GIT_REPOS\commander\..\gb_bi_fondos_inversion\run\04model\20.ProcessData.xml">
+		<data>
+			<input url="csvgz:datos.checkpoint.trainmatrix.csvgz" />
+			<output url="memory:k2" />
+		</data>
+		<transformations />
+	</PrepareData>
+	<SelectClassifier
+		file="j:\BigData\XLuisFco\GIT_REPOS\commander\..\gb_bi_fondos_inversion\run\04model\30.SelectClassifier.xml">
+		<options>
+			<kfolds>
+				5
+			</kfolds>
+			<training_rate>
+				0.75
+			</training_rate>
+			<overfitting_splits>
+				0.001,0.01,0.1,1
+			</overfitting_splits>
+		</options>
+		<data>
+			<input url="memory:k2" />
+		</data>
+		<models>
+			<model id="SVM" name="SVM_regL2_0.01" test_overfitting="false">
+				<conf>
+					<numIterations>
+						100
+					</numIterations>
+					<regParam>
+						0.01
+					</regParam>
+					<regType>
+						L2
+					</regType>
+				</conf>
+				<result>
+					<stats>
+						meanAndStd.toXMLWithFields
+					</stats>
+				</result>
+			</model>
+			<model id="SVM" name="SVM_regL2_0.001" test_overfitting="false">
+				<conf>
+					<numIterations>
+						100
+					</numIterations>
+					<regParam>
+						0.001
+					</regParam>
+					<regType>
+						L2
+					</regType>
+				</conf>
+				<result>
+					<stats>
+						meanAndStd.toXMLWithFields
+					</stats>
+				</result>
+			</model>
+			<model id="SVM" name="SVM_regL2_0" test_overfitting="false">
+				<conf>
+					<numIterations>
+						100
+					</numIterations>
+					<regParam>
+						0.0000001
+					</regParam>
+					<regType>
+						L2
+					</regType>
+				</conf>
+				<result>
+					<stats>
+						meanAndStd.toXMLWithFields
+					</stats>
+				</result>
+			</model>
+			<model id="RandomForest" name="RF_6_4" test_overfitting="false">
+				<conf>
+					<numTrees>
+						6
+					</numTrees>
+					<algo>
+						Classification
+					</algo>
+					<featureSubsetStrategy>
+						auto
+					</featureSubsetStrategy>
+					<impurity>
+						gini
+					</impurity>
+					<maxDepth>
+						4
+					</maxDepth>
+					<maxBins>
+						32
+					</maxBins>
+					<numClasses>
+						2
+					</numClasses>
+					<useNodeIdCache>
+						true
+					</useNodeIdCache>
+					<categoricalColumns />
+				</conf>
+				<result>
+					<stats>
+						meanAndStd.toXMLWithFields
+					</stats>
+				</result>
+			</model>
+			<model id="DecisionTree" name="DT_4" test_overfitting="false">
+				<conf>
+					<algo>
+						Classification
+					</algo>
+					<impurity>
+						gini
+					</impurity>
+					<maxDepth>
+						4
+					</maxDepth>
+					<maxBins>
+						32
+					</maxBins>
+					<numClasses>
+						3
+					</numClasses>
+					<categoricalColumns />
+					<useNodeIdCache>
+						false
+					</useNodeIdCache>
+				</conf>
+				<result>
+					<stats>
+						meanAndStd.toXMLWithFields
+					</stats>
+				</result>
+			</model>
+			<model id="MultilayerPerceptron" name="NN_2_6_2"
+				test_overfitting="false">
+				<conf>
+					<layers>
+						2,6,2
+					</layers>
+					<blockSize>
+						128
+					</blockSize>
+					<maxIter>
+						100
+					</maxIter>
+				</conf>
+				<error>
+					org.apache.spark.sql.Row$class.getSeq(Row.scala:278)
+					org.apache.spark.sql.catalyst.expressions.GenericRow.getSeq(rows.scala:192)
+					org.apache.spark.sql.Row$class.getList(Row.scala:286)
+					org.apache.spark.sql.catalyst.expressions.GenericRow.getList(rows.scala:192)
+					com.modelicious.in.modelos.classifier.MultilayerPerceptron.doTrain(MultilayerPerceptron.scala:29)
+					com.modelicious.in.modelos.classifier.ModeloML.train(Classifier.scala:171)
+					com.modelicious.in.stage.SelectClassifier$$anonfun$execute$1$$anonfun$apply$1.apply(SelectClassifier.scala:93)
+					com.modelicious.in.stage.SelectClassifier$$anonfun$execute$1$$anonfun$apply$1.apply(SelectClassifier.scala:78)
+					scala.collection.immutable.List.foreach(List.scala:318)
+					com.modelicious.in.stage.SelectClassifier$$anonfun$execute$1.apply(SelectClassifier.scala:78)
+					com.modelicious.in.stage.SelectClassifier$$anonfun$execute$1.apply(SelectClassifier.scala:68)
+					scala.collection.Iterator$class.foreach(Iterator.scala:727)
+					scala.collection.AbstractIterator.foreach(Iterator.scala:1157)
+					scala.collection.IterableLike$class.foreach(IterableLike.scala:72)
+					scala.collection.AbstractIterable.foreach(Iterable.scala:54)
+					com.modelicious.in.stage.SelectClassifier.execute(SelectClassifier.scala:68)
+					com.modelicious.in.BaseApp$$anonfun$main$1.apply(BaseApp.scala:82)
+					com.modelicious.in.BaseApp$$anonfun$main$1.apply(BaseApp.scala:75)
+					scala.collection.immutable.List.foreach(List.scala:318)
+					com.modelicious.in.BaseApp.main(BaseApp.scala:75)
+					com.modelicious.in.MainApp.main(MainApp.scala)
+					sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+					sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+					sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+					java.lang.reflect.Method.invoke(Method.java:606)
+					org.apache.spark.deploy.SparkSubmit$.org$apache$spark$deploy$SparkSubmit$$runMain(SparkSubmit.scala:731)
+					org.apache.spark.deploy.SparkSubmit$.doRunMain$1(SparkSubmit.scala:181)
+					org.apache.spark.deploy.SparkSubmit$.submit(SparkSubmit.scala:206)
+					org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:121)
+					org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)
+
+					org.apache.spark.mllib.linalg.DenseVector cannot be cast to
+					scala.collection.Seq
+				</error>
+			</model>
+			<model id="OneVsAllLogistic" name="1VsAll" test_overfitting="false">
+				<conf>
+					<numClasses>
+						2
+					</numClasses>
+				</conf>
+				<result>
+					<stats>
+						meanAndStd.toXMLWithFields
+					</stats>
+				</result>
+			</model>
+		</models>
+	</SelectClassifier>
+	<PrepareData
+		file="C:\Users\A181345\dev\commander\..\fi\02.20vars\20.ProcessData.xml">
+		<data>
+			<input url="memory:k1" />
+			<output url="memory:k2" />
+		</data>
+		<transformations>
+			<purge_invariant>
+				<min_relative_std>
+					0.1
+				</min_relative_std>
+				<auto>
+					false
+				</auto>
+				<exclude>
+					segmento_valor,segmento_actividad,segmento_socioeconomico,segmento_por_relacion,segmento_marketing
+				</exclude>
+				<columns_purged>
+					List()
+				</columns_purged>
+			</purge_invariant>
+			<purge_correlated>
+				<max_correlation>
+					0.90
+				</max_correlation>
+				<columns_purged>
+					List()
+				</columns_purged>
+			</purge_correlated>
+			<remove_outliers force_checkpoint="true">
+				<columns>
+					all
+				</columns>
+				<times>
+					3.0
+				</times>
+				<max_percentage_of_outliers>
+					0.05
+				</max_percentage_of_outliers>
+				<bulk>
+					true
+				</bulk>
+				<params>
+
+					<columns>
+						_none_
+					</columns>
+
+					<lines_removed>
+						0
+					</lines_removed>
+
+				</params>
+			</remove_outliers>
+			<discretize>
+				<limit>
+					50
+				</limit>
+				<nCategories>
+					5
+				</nCategories>
+				<discretizacion>
+
+
+					<antes>
+
+						<schema>
+
+							<column dataType="double" name="codigo_segmento_interno"
+								nullable="true">
+<![CDATA[{"dif_values":7}]]>
+							</column>
+							<column dataType="double" name="posee_deposito_plazo"
+								nullable="true">
+<![CDATA[{"dif_values":2}]]>
+							</column>
+							<column dataType="double" name="posee_fondos_inversion"
+								nullable="true">
+<![CDATA[{"dif_values":2}]]>
+							</column>
+							<column dataType="double" name="posee_plan_pensiones"
+								nullable="true">
+<![CDATA[{"dif_values":2}]]>
+							</column>
+							<column dataType="double" name="posee_tarj_credito"
+								nullable="true">
+<![CDATA[{"dif_values":2}]]>
+							</column>
+							<column dataType="double" name="saldofinal_pasivo_titprinc"
+								nullable="true">
+<![CDATA[{"dif_values":35963}]]>
+							</column>
+							<column dataType="double" name="numero_lineas_alta_vinculacion"
+								nullable="true">
+<![CDATA[{"dif_values":6}]]>
+							</column>
+							<column dataType="double" name="numero_lineas_productos"
+								nullable="true">
+<![CDATA[{"dif_values":23}]]>
+							</column>
+							<column dataType="double"
+								name="comisiones_todas_titularidades_interanual" nullable="true">
+<![CDATA[{"dif_values":21223}]]>
+							</column>
+							<column dataType="double"
+								name="margen_financiero_titularidad_principal_interanual"
+								nullable="true">
+<![CDATA[{"dif_values":19681}]]>
+							</column>
+							<column dataType="double" name="margen_ordinario_tp"
+								nullable="true">
+<![CDATA[{"dif_values":29692}]]>
+							</column>
+							<column dataType="double" name="importe_lcp" nullable="true">
+<![CDATA[{"dif_values":705}]]>
+							</column>
+							<column dataType="double" name="tenenc_accionmodelicious_mt"
+								nullable="true">
+<![CDATA[{"dif_values":3}]]>
+							</column>
+							<column dataType="double" name="tenenc_fondoinvers_mt"
+								nullable="true">
+<![CDATA[{"dif_values":3}]]>
+							</column>
+							<column dataType="double" name="numerlavs_mt" nullable="true">
+<![CDATA[{"dif_values":6}]]>
+							</column>
+							<column dataType="double" name="numercontrat_ahorroplazo_mt"
+								nullable="true">
+<![CDATA[{"dif_values":15}]]>
+							</column>
+							<column dataType="double" name="saldomensual_fondoinvers_mt"
+								nullable="true">
+<![CDATA[{"dif_values":4902}]]>
+							</column>
+							<column dataType="double" name="saldomedio_mensualtotalpasivo_mt"
+								nullable="true">
+<![CDATA[{"dif_values":41403}]]>
+							</column>
+							<column dataType="double" name="saldomediomensualahorrovista_mt"
+								nullable="true">
+<![CDATA[{"dif_values":40107}]]>
+							</column>
+							<column dataType="double" name="import_totalcomisionesmes_mt"
+								nullable="true">
+<![CDATA[{"dif_values":5692}]]>
+							</column>
+
+
+						</schema>
+					</antes>
+
+
+					<despues>
+						<schema>
+
+							<column dataType="double" name="codigo_segmento_interno"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":7}}]]>
+							</column>
+							<column dataType="double" name="posee_deposito_plazo"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":2}}]]>
+							</column>
+							<column dataType="double" name="posee_fondos_inversion"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":2}}]]>
+							</column>
+							<column dataType="double" name="posee_plan_pensiones"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":2}}]]>
+							</column>
+							<column dataType="double" name="posee_tarj_credito"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":2}}]]>
+							</column>
+							<column dataType="double" name="saldofinal_pasivo_titprinc"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":6,"buckets":"List(-Infinity, 0.0, 44312.0, 424843.0, 3089450.0, 1.03512145E9, Infinity)"}}]]>
+							</column>
+							<column dataType="double" name="numero_lineas_alta_vinculacion"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":6}}]]>
+							</column>
+							<column dataType="double" name="numero_lineas_productos"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":23}}]]>
+							</column>
+							<column dataType="double"
+								name="comisiones_todas_titularidades_interanual" nullable="true">
+<![CDATA[{"discretizer":{"dif_values":6,"buckets":"List(-Infinity, 25.0, 2263.0, 6410.0, 17772.0, 7051832.0, Infinity)"}}]]>
+							</column>
+							<column dataType="double"
+								name="margen_financiero_titularidad_principal_interanual"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":6,"buckets":"List(-Infinity, -60.0, -1.0, 0.0, 5655.0, 5182349.0, Infinity)"}}]]>
+							</column>
+							<column dataType="double" name="margen_ordinario_tp"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":6,"buckets":"List(-Infinity, 242.0, 5511.0, 15619.0, 47546.0, 7021819.0, Infinity)"}}]]>
+							</column>
+							<column dataType="double" name="importe_lcp" nullable="true">
+<![CDATA[{"discretizer":{"dif_values":6,"buckets":"List(-Infinity, 0.0, 300.0, 1500.0, 3820.0, 12000.0, Infinity)"}}]]>
+							</column>
+							<column dataType="double" name="tenenc_accionmodelicious_mt"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":3}}]]>
+							</column>
+							<column dataType="double" name="tenenc_fondoinvers_mt"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":3}}]]>
+							</column>
+							<column dataType="double" name="numerlavs_mt" nullable="true">
+<![CDATA[{"discretizer":{"dif_values":6}}]]>
+							</column>
+							<column dataType="double" name="numercontrat_ahorroplazo_mt"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":15}}]]>
+							</column>
+							<column dataType="double" name="saldomensual_fondoinvers_mt"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":6,"buckets":"List(-Infinity, 0.0, 0.12, 13.67, 17.86, 5492338.32, Infinity)"}}]]>
+							</column>
+							<column dataType="double" name="saldomedio_mensualtotalpasivo_mt"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":6,"buckets":"List(-Infinity, 43.76, 1036.08, 7143.5, 39604.72, 1.042629381E7, Infinity)"}}]]>
+							</column>
+							<column dataType="double" name="saldomediomensualahorrovista_mt"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":6,"buckets":"List(-Infinity, 21.3, 694.81, 3588.34, 12958.84, 4536728.03, Infinity)"}}]]>
+							</column>
+							<column dataType="double" name="import_totalcomisionesmes_mt"
+								nullable="true">
+<![CDATA[{"discretizer":{"dif_values":6,"buckets":"List(-Infinity, 0.0, 0.01, 0.29, 8.14, 5960.09, Infinity)"}}]]>
+							</column>
+
+
+						</schema>
+					</despues>
+
+
+				</discretizacion>
+			</discretize>
+			<standarize>
+				<withMean>
+					true
+				</withMean>
+				<withSTD>
+					true
+				</withSTD>
+				<standarize>
+
+
+					<params>
+
+
+						<mean>
+
+							List(2.6252514471037407, 0.1974834763331828, 0.12479986863171723, 0.11849829631758282,
+							0.3213801880208547, 2.1735908699043467, 2.234923436922698,
+							6.2719118190401915, 2.0157026150498787, 2.5577609918305346,
+							1.9917689560326777, 2.253397101687261, 0.19668295086005178,
+							0.24032185229278707, 2.0720883451701626, 0.2555523625764604,
+							1.3322180713493987, 2.008456833203333, 1.9943142165113517,
+							2.119688821380188)
+
+						</mean>
+
+
+						<std>
+
+							List(1.8222600592172282, 0.3981042653118082, 0.3304952396765822, 0.32320054801198644,
+							0.4670111771058504, 1.188936951239985, 1.3414089855350306,
+							3.362081170473235, 1.4071781726197437, 1.371991466432755,
+							1.415908570530887, 1.1612311051867836, 0.5753626879912318,
+							0.6454902562413151, 1.4113718422432284, 0.6769387383675568,
+							0.941197095141733, 1.408093424776272, 1.4026228004138723,
+							1.2106320474353058)
+
+						</std>
+
+
+					</params>
+
+
+				</standarize>
+			</standarize>
+		</transformations>
+	</PrepareData>
+  <SelectClassifier 
+  file="C:\Users\A181345\dev\commander\runs\demos\overfitting\30.SelectClassifier.xml">
+    <options>
+      <kfolds>3</kfolds>
+      <training_rate>0.75</training_rate>
+      <overfitting_splits>0.001,0.01,0.1,0.5,1</overfitting_splits>
+      <nCategories>6</nCategories>
+      <save>
+        <local>/Users/A181345/dev/commander/runs/demos/overfitting</local>
+        <remote>/user/A181345/test_overfitting</remote>
+      </save>
+    </options>
+    <data>
+      <input url="hdfs:/user/A181345/test_overfitting/temp.dat:repartition=12">
+        <columns>
+          [label,posee_deposito_plazo,posee_fondos_inversion,saldofinal_pasivo_titprinc,numero_lineas_productos,comisiones_todas_titularidades_interanual,margen_financiero_titularidad_principal_interanual,margen_ordinario_tp,saldo_medio_mensual_total_pasivo_minimo,saldo_medio_mensual_total_pasivo_maximo,saldo_medio_mensual_total_pasivo_desvtipica,saldo_medio_mensual_total_pasivo_tendabsoluta12m,importe_lcp,nu_ctrahorrplz_mt,im_saldmensufondinver_mt,im_saldmedmensutotpasv_mt,im_saldmedmensuahorrvis_mt,im_reembfondinvermes_mt,im_totcomismes_mt,codigo_segmento_interno_hot_1,codigo_segmento_interno_hot_2,codigo_segmento_interno_hot_3,in_tenacctabk_mt_hot_1,in_tenacctabk_mt_hot_2]
+        </columns>
+      </input>
+    </data>
+    <models>
+      <model name="DT_10" id="DecisionTree" test_overfitting="true">
+        <conf>
+          <impurity>gini</impurity>
+          <maxDepth>10</maxDepth>
+          <maxBins>32</maxBins>
+          <numClasses>2</numClasses>
+          <useNodeIdCache>false</useNodeIdCache>
+        </conf>
+        <result>
+          <stats>
+            <Statistics>
+              <Accuracy>0.96(0.00)</Accuracy>
+              <FNR>0.12(0.00)</FNR>
+              <FPR>0.03(0.00)</FPR>
+              <Ganancia>6.09(0.03)</Ganancia>
+              <N>75580.00(290.60)</N>
+              <P>11531.00(71.93)</P>
+              <Precision>0.81(0.00)</Precision>
+              <PrecisionExclu>0.98(0.00)</PrecisionExclu>
+              <PrecisionMinima>0.13(0.00)</PrecisionMinima>
+              <PrecisionMinimaExclu>0.87(0.00)</PrecisionMinimaExclu>
+              <TNR>0.97(0.00)</TNR>
+              <TPR>0.88(0.00)</TPR>
+              <Tiempo>10449488505.67(1386240934.96)</Tiempo>
+              <VolCampanha>12638.67(135.24)</VolCampanha>
+              <VolCampaniaExclu>74472.33(263.88)</VolCampaniaExclu>
+            </Statistics>
+          </stats>
+          <gd>
+            {&quot;series&quot;:[{&quot;data&quot;:[[0.001,0.0],[0.01,0.006723345766415124],[0.1,0.029031994444137454],[0.5,0.0380194722564804],[1.0,0.03962214190503487]],&quot;name&quot;:&quot;Training MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,0.0,0.0],[0.01,0.00163703514023487,0.011809656392595378],[0.1,0.02827142568862646,0.029792563199648448],[0.5,0.037421897964394116,0.03861704654856668],[1.0,0.03942236644337796,0.039821917366691786]],&quot;name&quot;:&quot;Margin Training MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;},{&quot;data&quot;:[[0.001,0.06319359842200388],[0.01,0.06400240993993918],[0.1,0.050085833990546356],[0.5,0.04532102903129792],[1.0,0.043732614868665254]],&quot;name&quot;:&quot;Test MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,0.05249536010136695,0.07389183674264081],[0.01,0.0614286336279894,0.06657618625188896],[0.1,0.049930994563023655,0.05024067341806906],[0.5,0.04498059571464228,0.04566146234795356],[1.0,0.04344087887812752,0.04402435085920299]],&quot;name&quot;:&quot;Margin Test MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;MSError&quot;}}],&quot;plotOptions&quot;:{&quot;line&quot;:{&quot;turboThreshold&quot;:0}},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;Overfitting Learning Curves&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;},&quot;xAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;Training Set Size&quot;}}]}
+          </gd>
+        </result>
+      </model>
+      <model name="RF_6_4" id="RandomForest" test_overfitting="true">
+        <conf>
+          <numTrees>6</numTrees>
+          <featureSubsetStrategy>auto</featureSubsetStrategy>
+          <impurity>gini</impurity>
+          <maxDepth>4</maxDepth>
+          <maxBins>32</maxBins>
+          <numClasses>2</numClasses>
+          <useNodeIdCache>true</useNodeIdCache>
+        </conf>
+        <result>
+          <stats>
+            <Statistics>
+              <Accuracy>0.96(0.00)</Accuracy>
+              <FNR>0.10(0.01)</FNR>
+              <FPR>0.04(0.00)</FPR>
+              <Ganancia>6.01(0.02)</Ganancia>
+              <N>75580.00(290.60)</N>
+              <P>11531.00(71.93)</P>
+              <Precision>0.80(0.00)</Precision>
+              <PrecisionExclu>0.98(0.00)</PrecisionExclu>
+              <PrecisionMinima>0.13(0.00)</PrecisionMinima>
+              <PrecisionMinimaExclu>0.87(0.00)</PrecisionMinimaExclu>
+              <TNR>0.96(0.00)</TNR>
+              <TPR>0.90(0.01)</TPR>
+              <Tiempo>5829897654.67(493791525.64)</Tiempo>
+              <VolCampanha>13048.67(163.75)</VolCampanha>
+              <VolCampaniaExclu>74062.33(519.72)</VolCampaniaExclu>
+            </Statistics>
+          </stats>
+          <gd>
+            {&quot;series&quot;:[{&quot;data&quot;:[[0.001,0.008635666836995402],[0.01,0.023473664324462424],[0.1,0.036405699854232],[0.5,0.04168066178840324],[1.0,0.0417704680224072]],&quot;name&quot;:&quot;Training MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,-0.006746489092259391,0.024017822766250196],[0.01,0.006051077163855386,0.040896251485069465],[0.1,0.02900003073835964,0.043811368970104354],[0.5,0.03785538017007599,0.04550594340673049],[1.0,0.039613330596312675,0.04392760544850172]],&quot;name&quot;:&quot;Margin Training MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;},{&quot;data&quot;:[[0.001,0.07260441773669069],[0.01,0.055471968628271216],[0.1,0.04752961632900398],[0.5,0.045276344430377764],[1.0,0.04383539202638973]],&quot;name&quot;:&quot;Test MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,0.05234515995927095,0.09286367551411043],[0.01,0.04634257093864216,0.06460136631790027],[0.1,0.04496807596835992,0.05009115668964804],[0.5,0.04405848356408071,0.04649420529667482],[1.0,0.04342634337177755,0.04424444068100191]],&quot;name&quot;:&quot;Margin Test MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;MSError&quot;}}],&quot;plotOptions&quot;:{&quot;line&quot;:{&quot;turboThreshold&quot;:0}},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;Overfitting Learning Curves&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;},&quot;xAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;Training Set Size&quot;}}]}
+          </gd>
+        </result>
+      </model>
+    </models>
+</SelectClassifier>
+  <SelectScorer 
+  file="C:\Users\A181345\dev\commander\runs\demos\overfitting\40.SelectScorer.xml">
+    <options>
+      <kfolds>3</kfolds>
+      <training_rate>0.75</training_rate>
+      <overfitting_splits>0.001,0.01,0.1,0.5,1</overfitting_splits>
+      <nCategories>6</nCategories>
+      <save>
+        <local>/Users/A181345/dev/commander/runs/demos/overfitting</local>
+        <remote>/user/A181345/test_overfitting</remote>
+      </save>
+    </options>
+    <data>
+      <input url="hdfs:/user/A181345/test_overfitting/temp.dat:repartition=12">
+        <columns>
+          [label,posee_deposito_plazo,posee_fondos_inversion,saldofinal_pasivo_titprinc,numero_lineas_productos,comisiones_todas_titularidades_interanual,margen_financiero_titularidad_principal_interanual,margen_ordinario_tp,saldo_medio_mensual_total_pasivo_minimo,saldo_medio_mensual_total_pasivo_maximo,saldo_medio_mensual_total_pasivo_desvtipica,saldo_medio_mensual_total_pasivo_tendabsoluta12m,importe_lcp,nu_ctrahorrplz_mt,im_saldmensufondinver_mt,im_saldmedmensutotpasv_mt,im_saldmedmensuahorrvis_mt,im_reembfondinvermes_mt,im_totcomismes_mt,codigo_segmento_interno_hot_1,codigo_segmento_interno_hot_2,codigo_segmento_interno_hot_3,in_tenacctabk_mt_hot_1,in_tenacctabk_mt_hot_2]
+        </columns>
+      </input>
+    </data>
+    <models>
+      <model name="DT_10" id="MLDecisionTreeS" test_overfitting="true">
+        <conf>
+          <impurity>gini</impurity>
+          <maxDepth>10</maxDepth>
+          <maxBins>32</maxBins>
+          <useNodeIdCache>false</useNodeIdCache>
+        </conf>
+        <result>
+          <stats>
+            <ScorerStatistics>
+              <Ganancia>6.58(0.03)</Ganancia>
+              <NumUnos>11531.00(71.93)</NumUnos>
+              <decil1>0.77(0.01)</decil1>
+              <decil2>0.05(0.00)</decil2>
+              <decil3>0.02(0.00)</decil3>
+              <decil4>0.01(0.00)</decil4>
+              <decil5>0.01(0.00)</decil5>
+              <decil6>0.00(0.00)</decil6>
+              <decil7>0.00(0.00)</decil7>
+              <decil8>0.00(0.00)</decil8>
+              <decil9>0.00(0.00)</decil9>
+            </ScorerStatistics>
+          </stats>
+          <gd>
+            {&quot;series&quot;:[{&quot;data&quot;:[[0.001,0.0],[0.01,0.007162612618799827],[0.1,0.023531567795645653],[0.5,0.029142415755974246],[1.0,0.030527212140411052]],&quot;name&quot;:&quot;Training MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,0.0,0.0],[0.01,0.006212712738666807,0.008112512498932847],[0.1,0.0229216401695316,0.024141495421759706],[0.5,0.02908739428896525,0.029197437222983243],[1.0,0.030437338899812493,0.03061708538100961]],&quot;name&quot;:&quot;Margin Training MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;},{&quot;data&quot;:[[0.001,0.08550054802340464],[0.01,0.06603840698932273],[0.1,0.042837699435379926],[0.5,0.03583811793958274],[1.0,0.03420005640050561]],&quot;name&quot;:&quot;Test MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,0.0728374266066066,0.09816366944020267],[0.01,0.06108169417824152,0.07099511980040395],[0.1,0.04272752700642993,0.042947871864329926],[0.5,0.035182690597205614,0.03649354528195987],[1.0,0.03395551721237777,0.03444459558863344]],&quot;name&quot;:&quot;Margin Test MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;MSError&quot;}}],&quot;plotOptions&quot;:{&quot;line&quot;:{&quot;turboThreshold&quot;:0}},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;Overfitting Learning Curves&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;},&quot;xAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;Training Set Size&quot;}}]}
+          </gd>
+        </result>
+      </model>
+      <model name="RF_6_4" id="MLRandomForestS" test_overfitting="true">
+        <conf>
+          <numTrees>6</numTrees>
+          <featureSubsetStrategy>auto</featureSubsetStrategy>
+          <impurity>gini</impurity>
+          <maxDepth>4</maxDepth>
+          <maxBins>32</maxBins>
+          <useNodeIdCache>true</useNodeIdCache>
+        </conf>
+        <result>
+          <stats>
+            <ScorerStatistics>
+              <Ganancia>6.53(0.04)</Ganancia>
+              <NumUnos>11531.00(71.93)</NumUnos>
+              <decil1>0.70(0.02)</decil1>
+              <decil2>0.08(0.01)</decil2>
+              <decil3>0.03(0.00)</decil3>
+              <decil4>0.02(0.00)</decil4>
+              <decil5>0.01(0.00)</decil5>
+              <decil6>0.01(0.00)</decil6>
+              <decil7>0.01(0.00)</decil7>
+              <decil8>0.01(0.00)</decil8>
+              <decil9>0.01(0.00)</decil9>
+            </ScorerStatistics>
+          </stats>
+          <gd>
+            {&quot;series&quot;:[{&quot;data&quot;:[[0.001,0.014168892388108222],[0.01,0.018863294646746433],[0.1,0.028759845740335643],[0.5,0.03240035952395575],[1.0,0.03272499455804283]],&quot;name&quot;:&quot;Training MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,-0.0013399548076811693,0.029677739583897612],[0.01,0.007009000740141607,0.030717588553351258],[0.1,0.023370641916686998,0.03414904956398429],[0.5,0.02896834307194007,0.035832375975971435],[1.0,0.030504433063110344,0.034945556052975314]],&quot;name&quot;:&quot;Margin Training MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;},{&quot;data&quot;:[[0.001,0.06951663792648811],[0.01,0.051872950570367615],[0.1,0.03861508108137284],[0.5,0.03566957556178791],[1.0,0.03458689337563838]],&quot;name&quot;:&quot;Test MSE&quot;,&quot;type&quot;:&quot;spline&quot;},{&quot;data&quot;:[[0.001,0.05112857704568533,0.0879046988072909],[0.01,0.03719891724322073,0.0665469838975145],[0.1,0.034350414237865286,0.0428797479248804],[0.5,0.0346799486434468,0.03665920248012902],[1.0,0.03404825748766206,0.0351255292636147]],&quot;name&quot;:&quot;Margin Test MSE&quot;,&quot;type&quot;:&quot;errorbar&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;MSError&quot;}}],&quot;plotOptions&quot;:{&quot;line&quot;:{&quot;turboThreshold&quot;:0}},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;Overfitting Learning Curves&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;},&quot;xAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;Training Set Size&quot;}}]}
+          </gd>
+        </result>
+      </model>
+    </models>
+</SelectScorer>
+	<!--RunScorer file="C:\Users\A181345\dev\commander\..\fi\03.20varsRunScorer\32.RunScorerFS.xml"><data><input 
+		url="csvgz:datos.checkpoint.run.20vars.csvgz:repartition=4"/><output url="csv:predictions_NB.csv"/></data><model 
+		url="models/SVM_SC/SVM_regL2_0.01"/><result><sta<ts><PredictionStatistics><NumUnos>0.0</NumUnos><decil1>1.2690247398393684</decil1><decil2>0.6785714852435288</decil2><decil3>0.3544119233944807</decil3><decil4>0.11690481833190186</decil4><decil5>-0.09333167798692887</decil5><decil6>-0.2994697754612547</decil6><decil7>-0.5092589541402486</decil7><decil8>-0.7702281156076535</decil8><decil9>-1.101199276694076</decil9></PredictionStatistics></stats></result></RunScorer><RunScorer 
+		file="C:\Users\A181345\dev\commander\..\fi\03.20varsRunScorer\33.RunScorerFS.xml"><data><input 
+		url="csvgz:datos.checkpoint.run.20vars.csvgz:repartition=4"/><output url="csv:predictions_SVM.csv"/></data><model 
+		url="models/SVM_SC/SVM_regL2_0.01"/><result><stats><PredictionStatistics><NumUnos>0.0</NumUnos><decil1>1.2690247398393684</decil1><decil2>0.6785714852435288</decil2><decil3>0.3544119233944807</decil3><decil4>0.11690481833190186</decil4><decil5>-0.09333167798692887</decil5><decil6>-0.2994697754612547</decil6><decil7>-0.5092589541402486</decil7><decil8>-0.7702281156076535</decil8><decil9>-1.101199276694076</decil9></PredictionStatistics></stats></result></RunScorer><RunScorer 
+		file="C:\Users\A181345\dev\commander\..\fi\03.20varsRunScorer\34.RunScorerFS.xml"><data><input 
+		url="csvgz:datos.checkpoint.run.20vars.csvgz:repartition=4"/><output url="csv:predictions_RF.csv"/></data><model 
+		nCategories="5" url="models/MLRandomForestS/RF_12_16"/><result><stats><PredictionStatistics><NumUnos>0.0</NumUnos><decil1>0.6464163223044993</decil1><decil2>0.5730036238918009</decil2><decil3>0.5210622710622711</decil3><decil4>0.4761904761904762</decil4><decil5>0.4315134099616858</decil5><decil6>0.38888888888888884</decil6><decil7>0.3333333333333333</decil7><decil8>0.3061186186186186</decil8><decil9>0.25</decil9></PredictionStatistics></stats></result></RunScorer -->
+<PrepareData file="C:\Users\A175606\workspace\commander\runs\demos\testing\10.LoadTestDataToDB.xml"><data><input url="lcsvgz:/Users/A175606/workspace/commander/runs/demos/testing//test_data.csvgz"/><output url="db:datalabin.test_table_modelID_sessionID:dropFirst=true"/></data><transformations/></PrepareData><LoadData file="C:\Users\A175606\workspace\commander\runs\demos\testing\11.LoadDataFromDB.xml"><data><output url="memory:test_data"/></data><sql><table>datalabin.test_table_modelID_sessionID</table><label>label</label><columns><include_only>label,antiguedad_hasta_la_caracterizacion,edad,marca_modelicious_sin_comisiones,posee_deposito_plazo,posee_tarj_credito,saldofinal_pasivo_titprinc,numero_lineas_productos,margen_financiero_titularidad_principal_interanual,margen_ordinario_tp,saldo_medio_mensual_total_pasivo_coefvarporcentual,saldo_medio_mensual_total_pasivo_tendrelativa01m,saldo_medio_mensual_total_pasivo_tendrelativa03m,importe_lcp,tiene_lcp,nu_opernoautomoficmes_mt,nu_tjcredactv_mt,nu_ctrahorrplz_mt,im_saldmedmensuahorrvis_mt,segmento_valor,segmento_marketing</include_only></columns></sql><result><columns_ordered>[(label,int),(antiguedad_hasta_la_caracterizacion,int),(edad,int),(marca_modelicious_sin_comisiones,int),(posee_deposito_plazo,int),(posee_tarj_credito,int),(saldofinal_pasivo_titprinc,int),(numero_lineas_productos,int),(margen_financiero_titularidad_principal_interanual,int),(margen_ordinario_tp,int),(saldo_medio_mensual_total_pasivo_coefvarporcentual,double),(saldo_medio_mensual_total_pasivo_tendrelativa01m,double),(saldo_medio_mensual_total_pasivo_tendrelativa03m,double),(importe_lcp,int),(tiene_lcp,int),(nu_opernoautomoficmes_mt,int),(nu_tjcredactv_mt,int),(nu_ctrahorrplz_mt,int),(im_saldmedmensuahorrvis_mt,int),(segmento_valor,int),(segmento_marketing,int)]</columns_ordered></result></LoadData><RunScorer file="C:\Users\A175606\workspace\commander\runs\demos\testing\20.RunScorer.xml"><data><input url="memory:test_data:repartition=40"/><output url="lcsvgz:/Users/A175606/workspace/commander/runs/demos/testing//predictions2.csvgz"/></data><model url="local:/Users/A175606/workspace/commander/runs/demos/testing//models/MLDecisionTreeS/DT_10" nCategories="5" balancing="1.0"><conf URL="local:/Users/A175606/workspace/commander/runs/demos/testing//models/MLDecisionTreeS/DT_10" model="MLDecisionTreeS">
+  <algo>Classification</algo>
+  <impurity>gini</impurity>
+  <maxDepth>10</maxDepth>
+  <maxBins>32</maxBins>
+  <numClasses>2</numClasses>
+  <useNodeIdCache>false</useNodeIdCache>
+  <categoricalColumns/>
+</conf><result><stats><PredictionStatistics><decil1>1.0</decil1><decil2>0.6666666666666666</decil2><decil3>0.3206243602865916</decil3><decil4>0.2</decil4><decil5>0.2</decil5><decil6>0.12949640287769784</decil6><decil7>0.06818181818181818</decil7><decil8>0.06818181818181818</decil8><decil9>0.055639097744360905</decil9><num_clientes>1000</num_clientes></PredictionStatistics></stats></result></model></RunScorer><CompareData file="C:\Users\A175606\workspace\commander\runs\demos\testing\30.CompareData.xml"><result><SameSchema>true</SameSchema><SameData>true</SameData></result></CompareData>
+</result>

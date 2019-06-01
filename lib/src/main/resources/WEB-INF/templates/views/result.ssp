@@ -1,0 +1,74 @@
+<%@ val res: scala.xml.Elem %>
+<% attributes("title") = "Results" %>
+<% attributes("headline") = s"Results for ${res.head.label}" %>
+
+
+<% import com.modelicious.in.html.ScalateHelpers %>
+
+
+<div class="row">
+<div class="col-md-12">
+<div id="results" class="collapse">
+<pre><code class="xml">
+<%= new scala.xml.PrettyPrinter(80, 2).format(res) %>
+</code></pre>
+</div>
+</div> <!-- col -->
+</div> <!-- row -->
+
+<div class="row">
+  <div class="col-md-12" > 
+  <ul id="tree1">
+	#for (c <- res.child)
+	<li> ${c.label.capitalize}
+		<ul>
+			<li><a style="overflow-wrap:break-word;">File: ${(c \ "@file" ) }</a></li>
+			<% val d = c \ "data" %>
+  			<%= if( d.size > 0 ) { ScalateHelpers.data( d ) } %>
+  			<% render( s"stages/${c.label}.ssp", Map( "stage" -> c ) ) %>
+  		</ul>
+  	</li>
+	#end
+	</ul>
+  </div>
+</div>
+
+
+
+
+
+<script>
+$('#tree1').treed({openedClass:'glyphicon-chevron-right', closedClass:'glyphicon-chevron-down'});
+</script>
+<script>
+/* TODO: Mejorar metodo para q se puedna pintar varios highcharts*/
+	function print_chart( container, data_id ){
+    	var data = $.parseJSON( unescape( $(data_id).html() ) );
+        $(container).highcharts(data);
+	}
+
+/*	$('.withData').click(function(e){
+    	e.preventDefault();
+	 	var me = $(this);
+     	var dataContent = me.find('.dataDiv').html();
+		var statsContent = me.find('.statsDiv').html();
+		var imgContent = me.find('.imgDiv').html();
+
+     	if(dataContent) { $("#data_container").html(dataContent) } else $("#data_container").empty();
+     	if(statsContent) { $("#stats_container").html(statsContent) } else $("#stats_container").empty();
+     	if(imgContent) { print_chart( "#img_container", me.find('.imgDiv') ) } else $("#img_container").empty();
+	});
+*/
+
+	$('.withData').click(function(e){
+    	e.preventDefault();
+	 	var me = $(this);
+		me.parent().children("div").collapse("toggle")
+	});
+
+</script>
+
+
+
+
+

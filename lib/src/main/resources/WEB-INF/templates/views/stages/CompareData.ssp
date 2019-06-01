@@ -1,0 +1,11 @@
+<%@ val stage: scala.xml.Elem %>
+<% import com.modelicious.in.html.ScalateHelpers %>
+
+<% val r = stage\"result"  %>
+<li><a href="#" class="withData">Result</a>		
+	<div class="dataDiv collapse">
+		<pre><code class="xml">
+<%= new scala.xml.PrettyPrinter(80, 2).format(r.head) %>
+		</code></pre>
+	</div>
+</li>

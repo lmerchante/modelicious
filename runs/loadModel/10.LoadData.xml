@@ -1,0 +1,17 @@
+<LoadData>
+	<data>
+		<output url="hdfs:input.dat"/>
+	</data>
+	<sql>
+		<table>datalabin.cc_clientes_compartidos</table>
+		<label>cliente</label>
+		<columns>
+			<exclude>
+				<column>etiqueta_binaria</column>
+				<column>sexo</column>
+				<column>ind_cargo_comunidad</column>
+				<column>etiqueta</column>
+			</exclude>
+		</columns>
+	</sql>
+</LoadData>

@@ -1,0 +1,1151 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>transform - com.modelicious.in.transform</title>
+          <meta name="description" content="transform - com.modelicious.in.transform" />
+          <meta name="keywords" content="transform com.modelicious.in.transform" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.modelicious.in.transform.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img src="../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.modelicious">modelicious</a>.<a href="../package.html" class="extype" name="com.modelicious.in">in</a></p>
+        <h1>transform</h1>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transform</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><h4> Data transformers </h4><p>Contains all the classes that allow to transform dataframes.</p><p>The current list of transformations available is:</p><ul><li>Filter Columns</li><li>Drop columns</li><li>Discretization</li><li>Feature Selection</li><li>One hot Enconding</li><li>PCA</li><li>Purge Correlated Columns</li><li>Purge Invariant Columns</li><li>Remove Outliers</li><li>Sampling</li><li>Scaling</li></ul><p>The flow mimics the one that is implemented by ML and MLLIB model in the sense that, for each transformation, there is a main class
+<i>DataTransformer</i> that can be configured and fited and another class <i>DataTransformerModel</i> That is created when the former is
+fitted and that will apply the real transformation to the DataFrame.<br/>
+Also, for simplicity when creating new Models and not having to tinker with xml serialization a helper class
+<a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">com.modelicious.in.transform.TransformerState</a> must be inherited.
+Creating the configuration, or <i>state</i> in this case, that the Model and the TransformModel will share is then automatic.</p><p>To create a brand new <b>X</b> transformation flow, the following classes must be created:</p><ul><li>An <b>x TransformerState</b> case class. This one must inherit from TransformerState that has a set of utilities that allow to,
+  normally, obviate the xml serialization logic. Check <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">com.modelicious.in.transform.TransformerState</a> for more information on the
+  capabilities of this class.</li><li>A <b>XTransformer</b> that inherits from <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">com.modelicious.in.transform.DataTransformer</a> and must meet the follwoing interface:</li></ul><pre><span class="kw">abstract</span> <span class="kw">class</span> DataTransformer[T <span class="kw">&lt;:</span> TransformerState]( <span class="kw">implicit</span> tt: scala.reflect.runtime.universe.<span class="std">TypeTag</span>[T], ct: scala.reflect.<span class="std">ClassTag</span>[T] ) {
+
+<span class="kw">def</span> configure( conf: scala.xml.NodeSeq ): <span class="kw">this</span>.<span class="kw">type</span> = {
+  state = TransformerState.fromXML[T]( conf.asInstanceOf[scala.xml.Node] )
+  <span class="kw">this</span>
+}
+
+<span class="kw">def</span> fit( data: DataWrapper ) : DataTransformerModel[T]
+
+}</pre><p>where <i>T</i> is the case class of the first point.
+It must implement a fit method that receives the data and creates the TransformerModel that will apply the transform.
+This method will complete the state configuration that allows the generated TransformModel to apply the final transformation to the data.
+Optionally, the user can also override the <a href="DataTransformer.html#configure(conf:scala.xml.NodeSeq):DataTransformer.this.type" class="extmbr" name="com.modelicious.in.transform.DataTransformer#configure">com.modelicious.in.transform.DataTransformer.configure</a> method to apply some validity
+checks on the passed state configuration.
+An example of when this can be helpful is on the <a href="DiscretizeTransform.html#configure(conf:scala.xml.NodeSeq):DiscretizeTransform.this.type" class="extmbr" name="com.modelicious.in.transform.DiscretizeTransform#configure">com.modelicious.in.transform.DiscretizeTransform.configure</a>  method.</p><p>- Finally, a <b>XTransformerModel</b> that follows the following interface:</p><pre><span class="kw">abstract</span> <span class="kw">class</span> DataTransformerModel [T <span class="kw">&lt;:</span> TransformerState]( theState : TransformerState ) {
+
+<span class="kw">def</span> doTransform( data: DataWrapper ): DataWrapper
+
+<span class="kw">var</span> rslt : scala.xml.Node = _
+
+}</pre><p>where T is, again the state case class that holds all the configuration needed to apply the transformation.
+The doTransform is the method that, using the state case class configuration, applies the transformation to the input DataFrame,
+returning a new one. And, also the <i>var rslt</i> should be filled with the result of the transformation, so the user can do a follow
+up of the results of each transformation.</p><h4> The Transformation Flow </h4><p>When we train a Model, we must configure a whole set of transformations with a set of given parameters.
+Take, for example, that we want to apply a standarization.
+We have 2 cases here, the training of the model, and the effective application of the model to real data.</p><h5> Training </h5><ul><li>We create a DataTransformer with the configuration set to apply only standarization by mean.</li><li>When we fit the train data to the DataTransformer object, this will return a DataTransformerModel with an internal state that
+  has the relevant information, in this case, the mean for each column of the train data. This data can be stored.</li><li>We apply the <i>TransformModel</i> <b>transform</b> method to the train data.</li><li>We train our Model with the transformed train data.</li></ul><h5> Prediction </h5><p>If our model is a success and we want to apply it to brand new real data, we have to apply to this data
+the very same transformations that we used for the training set.
+Luckily, whe we save the model, we also saved the chain fo transformations that we applied to the train data. So we have the state
+that the TransformModel had when it applied the transformation to the Data.
+So this time, the flow is the following:</p><ul><li>We read from the model metadata the state with the mean for every column.</li><li>We create a StandarizerTransformModel to which we pass this state we just read.</li><li>The data is transformed by the TransformModel.</li><li>Finally, the Model can just compute the predictions over this transformed real data set.</li></ul><h4> Creation of new States </h4><p>The state is the base of the transform model as it will hold both the configuration passed by the user, that is read by the
+<a href="DataTransformer.html#configure(conf:scala.xml.NodeSeq):DataTransformer.this.type" class="extmbr" name="com.modelicious.in.transform.DataTransformer#configure">com.modelicious.in.transform.DataTransformer.configure</a> method, and the configuration generated by the
+<a href="DataTransformer.html#fit(data:com.modelicious.in.data.DataWrapper):com.modelicious.in.transform.DataTransformerModel[T]" class="extmbr" name="com.modelicious.in.transform.DataTransformer#fit">com.modelicious.in.transform.DataTransformer.fit</a> method.
+In order to have a faster development of new transformations, the task of reading and writing configurations from the XML has
+been delegated to the <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">com.modelicious.in.transform.TransformerState</a> class, from which any new state must inherit.
+A number of types has been already implementd, that should cover the new cases, and, only for new types this would need to be extended.</p><p>All the case classes must be declared with the following contraints:</p><ul><li>The case class name must be the same as it will apper on the configuration XML ( This includes case or underscores )</li><li>It must not accept any argument it their constructor (This is due to a limitation on scala reflection, it is not easy to call to the default constructor.)</li><li>It must declare each variable member that can apper on the xml element  wit its type and also a default value</li></ul><p>Take for example the</p><pre><span class="kw">case</span> <span class="kw">class</span> feature_selection() <span class="kw">extends</span> TransformerState{
+<span class="kw">var</span> method: <span class="std">String</span> = <span class="lit">"mifs"</span>
+<span class="kw">var</span> num_features: <span class="std">Int</span> = <span class="num">10</span>
+<span class="kw">var</span> num_partitions: <span class="std">Int</span> = <span class="num">100</span>
+<span class="kw">var</span> selected_features: <span class="std">List</span>[<span class="std">Int</span>] = <span class="std">List</span>() <span class="cmt">// TODO: Ser￭a mejor quedarse con los nombres</span>
+}</pre><p>that will match with this xml in the conf files:</p><p>&lt;feature_selection&gt;
+		&lt;num_features&gt;10&lt;/num_features&gt;
+ 	&lt;num_partitions&gt;100&lt;/num_partitions&gt;
+&lt;/feature_selection&gt;</p><p>We can see the following:</p><ul><li>The case class name is <b>exactly</b> the same than the xml element.</li><li>Each var in the case class matches a child element in the xml.</li><li>If one is not present, like <b>method</b>, the default value will be set.</li><li>The variable <b>selected_features</b> is intended to be filled by the fit method.</li></ul><h4> Helper methods </h4></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p><a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">com.modelicious.in.transform.DataTransformerModel</a></p></span><span class="cmt"><p><a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">com.modelicious.in.transform.DataTransformer</a></p></span><span class="cmt"><p><a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">com.modelicious.in.transform.TransformerState</a></p></span></dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Any" class="extype" target="_top">Any</a></div>
+        </div><div class="toggleContainer block diagram-container" id="content-diagram-container">
+                <span class="toggle diagram-link">Content Hierarchy</span>
+                <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#diagrams" target="_blank" class="diagram-help">Learn more about scaladoc diagrams</a>
+                <div class="diagram" id="content-diagram"><svg class="package-diagram" id="graph26" viewBox="0.00 0.00 6311.50 94.00" height="94pt" width="6312pt" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><g transform="scale(1 1) rotate(0) translate(4 90)" class="graph" id="graph0"><polygon points="-4,4 -4,-90 6307.5,-90 6307.5,4 -4,4" stroke="none" fill="white"></polygon><!-- node0 --><g class="node trait" id="graph26_0"><g id="a_trait|graph26_0"><a xlink:title="com.modelicious.in.transform.TransformerState" xlink:href="TransformerState.html#inheritance-diagram"><polygon points="880.5,-86 761.5,-86 761.5,-61 880.5,-61 880.5,-86" stroke="#37657d" fill="#498aad"></polygon><image xlink:href="../../../../lib/trait_diagram.png" y="-80.5" x="772" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-70.5" x="793" text-anchor="start">TransformerState</text></a></g></g><!-- node3 --><g class="node class" id="graph26_3"><g id="a_class|graph26_3"><a xlink:title="com.modelicious.in.transform.standarize" xlink:href="standarize.html#inheritance-diagram"><polygon points="90,-25 0,-25 0,-0 90,-0 90,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="10" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="31" text-anchor="start">standarize</text></a></g></g><!-- node0&#45;&gt;node3 --><g class="edge inheritance" id="graph26_0_3"><g id="a_inheritance|graph26_0_3"><a xlink:title="standarize is a subtype of TransformerState"><path d="M756.094,-71.3606C629.258,-68.4437 339.852,-58.3916 99,-25 96.1517,-24.6051 93.2293,-24.1448 90.2895,-23.6399" stroke="#d4d4d4" fill="none"></path><polygon points="756.235,-73.1142 761.274,-71.4778 756.315,-69.6151 756.235,-73.1142" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node6 --><g class="node class" id="graph26_6"><g id="a_class|graph26_6"><a xlink:title="com.modelicious.in.transform.save" xlink:href="save.html#inheritance-diagram"><polygon points="172,-25 108,-25 108,-0 172,-0 172,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="118" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="139" text-anchor="start">save</text></a></g></g><!-- node0&#45;&gt;node6 --><g class="edge inheritance" id="graph26_0_6"><g id="a_inheritance|graph26_0_6"><a xlink:title="save is a subtype of TransformerState"><path d="M756.307,-71.945C640.202,-70.009 389.153,-61.5396 181,-25 178.087,-24.4887 175.084,-23.8565 172.089,-23.1535" stroke="#d4d4d4" fill="none"></path><polygon points="756.367,-73.6961 761.395,-72.027 756.424,-70.1965 756.367,-73.6961" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node9 --><g class="node class" id="graph26_9"><g id="a_class|graph26_9"><a xlink:title="com.modelicious.in.transform.sampling" xlink:href="sampling.html#inheritance-diagram"><polygon points="274,-25 190,-25 190,-0 274,-0 274,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="200" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="221" text-anchor="start">sampling</text></a></g></g><!-- node0&#45;&gt;node9 --><g class="edge inheritance" id="graph26_0_9"><g id="a_inheritance|graph26_0_9"><a xlink:title="sampling is a subtype of TransformerState"><path d="M756.328,-69.5879C654.957,-64.395 452.683,-51.4999 283,-25 280.13,-24.5518 277.181,-24.036 274.217,-23.4765" stroke="#d4d4d4" fill="none"></path><polygon points="756.293,-71.3382 761.375,-69.8443 756.471,-67.8427 756.293,-71.3382" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node12 --><g class="node class" id="graph26_12"><g id="a_class|graph26_12"><a xlink:title="com.modelicious.in.transform.repartition" xlink:href="repartition.html#inheritance-diagram"><polygon points="379.5,-25 292.5,-25 292.5,-0 379.5,-0 379.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="303" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="324" text-anchor="start">repartition</text></a></g></g><!-- node0&#45;&gt;node12 --><g class="edge inheritance" id="graph26_0_12"><g id="a_inheritance|graph26_0_12"><a xlink:title="repartition is a subtype of TransformerState"><path d="M756.104,-67.4861C671.337,-60.4523 518.472,-46.1055 389,-25 385.933,-24.5001 382.777,-23.938 379.604,-23.338" stroke="#d4d4d4" fill="none"></path><polygon points="756.21,-69.2508 761.338,-67.9183 756.499,-65.7627 756.21,-69.2508" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node13 --><g class="node class" id="graph26_13"><g id="a_class|graph26_13"><a xlink:title="com.modelicious.in.transform.remove_outliers" xlink:href="remove_outliers.html#inheritance-diagram"><polygon points="510,-25 398,-25 398,-0 510,-0 510,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="408" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="429" text-anchor="start">remove_outliers</text></a></g></g><!-- node0&#45;&gt;node13 --><g class="edge inheritance" id="graph26_0_13"><g id="a_inheritance|graph26_0_13"><a xlink:title="remove_outliers is a subtype of TransformerState"><path d="M756.271,-62.685C695.079,-53.3198 600.723,-38.655 519,-25 516.061,-24.509 513.049,-23.999 510.008,-23.4791" stroke="#d4d4d4" fill="none"></path><polygon points="756.145,-64.436 761.352,-63.4621 756.674,-60.9762 756.145,-64.436" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node16 --><g class="node class" id="graph26_16"><g id="a_class|graph26_16"><a xlink:title="com.modelicious.in.transform.purge_invariant" xlink:href="purge_invariant.html#inheritance-diagram"><polygon points="637.5,-25 528.5,-25 528.5,-0 637.5,-0 637.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="539" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="560" text-anchor="start">purge_invariant</text></a></g></g><!-- node0&#45;&gt;node16 --><g class="edge inheritance" id="graph26_0_16"><g id="a_inheritance|graph26_0_16"><a xlink:title="purge_invariant is a subtype of TransformerState"><path d="M769.562,-59.7485C728,-49.4454 669.996,-35.0662 629.743,-25.0875" stroke="#d4d4d4" fill="none"></path><polygon points="769.272,-61.4796 774.546,-60.9841 770.114,-58.0824 769.272,-61.4796" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node17 --><g class="node class" id="graph26_17"><g id="a_class|graph26_17"><a xlink:title="com.modelicious.in.transform.purge_correlated" xlink:href="purge_correlated.html#inheritance-diagram"><polygon points="772.5,-25 655.5,-25 655.5,-0 772.5,-0 772.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="666" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="687" text-anchor="start">purge_correlated</text></a></g></g><!-- node0&#45;&gt;node17 --><g class="edge inheritance" id="graph26_0_17"><g id="a_inheritance|graph26_0_17"><a xlink:title="purge_correlated is a subtype of TransformerState"><path d="M795.575,-58.4807C777.161,-48.3269 752.554,-34.7588 735.198,-25.1884" stroke="#d4d4d4" fill="none"></path><polygon points="794.892,-60.1023 800.115,-60.9841 796.582,-57.0373 794.892,-60.1023" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node24 --><g class="node class" id="graph26_24"><g id="a_class|graph26_24"><a xlink:title="com.modelicious.in.transform.pca" xlink:href="pca.html#inheritance-diagram"><polygon points="851,-25 791,-25 791,-0 851,-0 851,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="801" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="822" text-anchor="start">pca</text></a></g></g><!-- node0&#45;&gt;node24 --><g class="edge inheritance" id="graph26_0_24"><g id="a_inheritance|graph26_0_24"><a xlink:title="pca is a subtype of TransformerState"><path d="M821,-55.6874C821,-45.9173 821,-33.8534 821,-25.1323" stroke="#d4d4d4" fill="none"></path><polygon points="819.25,-55.8435 821,-60.8435 822.75,-55.8435 819.25,-55.8435" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node25 --><g class="node class" id="graph26_25"><g id="a_class|graph26_25"><a xlink:title="com.modelicious.in.transform.ones_balancer" xlink:href="ones_balancer.html#inheritance-diagram"><polygon points="977,-25 869,-25 869,-0 977,-0 977,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="879" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="900" text-anchor="start">ones_balancer</text></a></g></g><!-- node0&#45;&gt;node25 --><g class="edge inheritance" id="graph26_0_25"><g id="a_inheritance|graph26_0_25"><a xlink:title="ones_balancer is a subtype of TransformerState"><path d="M845.484,-58.3379C863.045,-48.18 886.417,-34.661 902.89,-25.1323" stroke="#d4d4d4" fill="none"></path><polygon points="844.604,-56.8251 841.152,-60.8435 846.356,-59.8548 844.604,-56.8251" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node30 --><g class="node class" id="graph26_30"><g id="a_class|graph26_30"><a xlink:title="com.modelicious.in.transform.onehot" xlink:href="onehot.html#inheritance-diagram"><polygon points="1069,-25 995,-25 995,-0 1069,-0 1069,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="1005" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="1026" text-anchor="start">onehot</text></a></g></g><!-- node0&#45;&gt;node30 --><g class="edge inheritance" id="graph26_0_30"><g id="a_inheritance|graph26_0_30"><a xlink:title="onehot is a subtype of TransformerState"><path d="M867.246,-59.5687C905.541,-48.8604 959.253,-33.8416 994.808,-23.8998" stroke="#d4d4d4" fill="none"></path><polygon points="866.528,-57.9523 862.184,-60.9841 867.47,-61.323 866.528,-57.9523" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node33 --><g class="node class" id="graph26_33"><g id="a_class|graph26_33"><a xlink:title="com.modelicious.in.transform.mathT" xlink:href="mathT.html#inheritance-diagram"><polygon points="1159,-25 1087,-25 1087,-0 1159,-0 1159,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="1097" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="1118" text-anchor="start">mathT</text></a></g></g><!-- node0&#45;&gt;node33 --><g class="edge inheritance" id="graph26_0_33"><g id="a_inheritance|graph26_0_33"><a xlink:title="mathT is a subtype of TransformerState"><path d="M885.661,-61.7925C937.779,-52.8635 1012.85,-39.3274 1078,-25 1080.84,-24.3765 1083.76,-23.7009 1086.7,-23.0002" stroke="#d4d4d4" fill="none"></path><polygon points="885.324,-60.0747 880.691,-62.6421 885.914,-63.5246 885.324,-60.0747" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node36 --><g class="node class" id="graph26_36"><g id="a_class|graph26_36"><a xlink:title="com.modelicious.in.transform.filter" xlink:href="filter.html#inheritance-diagram"><polygon points="1240.5,-25 1177.5,-25 1177.5,-0 1240.5,-0 1240.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="1188" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="1209" text-anchor="start">filter</text></a></g></g><!-- node0&#45;&gt;node36 --><g class="edge inheritance" id="graph26_0_36"><g id="a_inheritance|graph26_0_36"><a xlink:title="filter is a subtype of TransformerState"><path d="M886.059,-66.293C956.128,-58.9813 1070.67,-45.2125 1168,-25 1171.04,-24.3687 1174.19,-23.635 1177.32,-22.8495" stroke="#d4d4d4" fill="none"></path><polygon points="885.467,-64.5949 880.674,-66.8513 885.828,-68.0762 885.467,-64.5949" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node37 --><g class="node class" id="graph26_37"><g id="a_class|graph26_37"><a xlink:title="com.modelicious.in.transform.feature_selection" xlink:href="feature_selection.html#inheritance-diagram"><polygon points="1377,-25 1259,-25 1259,-0 1377,-0 1377,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="1269" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="1290" text-anchor="start">feature_selection</text></a></g></g><!-- node0&#45;&gt;node37 --><g class="edge inheritance" id="graph26_0_37"><g id="a_inheritance|graph26_0_37"><a xlink:title="feature_selection is a subtype of TransformerState"><path d="M885.859,-66.4149C969.825,-58.282 1120.61,-42.8094 1249,-25 1252.25,-24.5495 1255.58,-24.066 1258.94,-23.5617" stroke="#d4d4d4" fill="none"></path><polygon points="885.482,-64.6931 880.673,-66.916 885.819,-68.1768 885.482,-64.6931" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node42 --><g class="node class" id="graph26_42"><g id="a_class|graph26_42"><a xlink:title="com.modelicious.in.transform.drop" xlink:href="drop.html#inheritance-diagram"><polygon points="1458.5,-25 1395.5,-25 1395.5,-0 1458.5,-0 1458.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="1406" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="1427" text-anchor="start">drop</text></a></g></g><!-- node0&#45;&gt;node42 --><g class="edge inheritance" id="graph26_0_42"><g id="a_inheritance|graph26_0_42"><a xlink:title="drop is a subtype of TransformerState"><path d="M886.126,-71.0274C991.816,-67.7442 1206.91,-57.3426 1386,-25 1389.06,-24.4482 1392.21,-23.7679 1395.35,-23.0162" stroke="#d4d4d4" fill="none"></path><polygon points="885.812,-69.2861 880.867,-71.1877 885.918,-72.7844 885.812,-69.2861" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node45 --><g class="node class" id="graph26_45"><g id="a_class|graph26_45"><a xlink:title="com.modelicious.in.transform.discretize" xlink:href="discretize.html#inheritance-diagram"><polygon points="1563.5,-25 1476.5,-25 1476.5,-0 1563.5,-0 1563.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="1487" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="1508" text-anchor="start">discretize</text></a></g></g><!-- node0&#45;&gt;node45 --><g class="edge inheritance" id="graph26_0_45"><g id="a_inheritance|graph26_0_45"><a xlink:title="discretize is a subtype of TransformerState"><path d="M885.642,-70.7462C1002.31,-66.9152 1255.61,-55.5511 1467,-25 1470.08,-24.5556 1473.24,-24.0346 1476.42,-23.4642" stroke="#d4d4d4" fill="none"></path><polygon points="885.47,-69.0007 880.53,-70.9121 885.584,-72.4989 885.47,-69.0007" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node1 --><g class="node class" id="graph26_1"><g id="a_class|graph26_1"><a xlink:title="com.modelicious.in.transform.StandarTransformModel" xlink:href="StandarTransformModel.html#inheritance-diagram"><polygon points="1728.5,-25 1581.5,-25 1581.5,-0 1728.5,-0 1728.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="1592" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="1613" text-anchor="start">StandarTransformModel</text></a></g></g><!-- node2 --><g class="node class" id="graph26_2"><g id="a_class|graph26_2"><a xlink:title="com.modelicious.in.transform.StandarTransform" xlink:href="StandarTransform.html#inheritance-diagram"><polygon points="4268.5,-25 4147.5,-25 4147.5,-0 4268.5,-0 4268.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="4158" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="4179" text-anchor="start">StandarTransform</text></a></g></g><!-- node4 --><g class="node class" id="graph26_4"><g id="a_class|graph26_4"><a xlink:title="com.modelicious.in.transform.SaveTransformModel" xlink:href="SaveTransformModel.html#inheritance-diagram"><polygon points="1881.5,-25 1746.5,-25 1746.5,-0 1881.5,-0 1881.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="1757" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="1778" text-anchor="start">SaveTransformModel</text></a></g></g><!-- node5 --><g class="node class" id="graph26_5"><g id="a_class|graph26_5"><a xlink:title="com.modelicious.in.transform.SaveTransform" xlink:href="SaveTransform.html#inheritance-diagram"><polygon points="4395,-25 4287,-25 4287,-0 4395,-0 4395,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="4297" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="4318" text-anchor="start">SaveTransform</text></a></g></g><!-- node7 --><g class="node class" id="graph26_7"><g id="a_class|graph26_7"><a xlink:title="com.modelicious.in.transform.SamplingTransformModel" xlink:href="SamplingTransformModel.html#inheritance-diagram"><polygon points="2054,-25 1900,-25 1900,-0 2054,-0 2054,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="1910" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="1931" text-anchor="start">SamplingTransformModel</text></a></g></g><!-- node8 --><g class="node class" id="graph26_8"><g id="a_class|graph26_8"><a xlink:title="com.modelicious.in.transform.SamplingTransform" xlink:href="SamplingTransform.html#inheritance-diagram"><polygon points="4541,-25 4413,-25 4413,-0 4541,-0 4541,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="4423" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="4444" text-anchor="start">SamplingTransform</text></a></g></g><!-- node10 --><g class="node class" id="graph26_10"><g id="a_class|graph26_10"><a xlink:title="com.modelicious.in.transform.RepartitionTransformModel" xlink:href="RepartitionTransformModel.html#inheritance-diagram"><polygon points="2232,-25 2072,-25 2072,-0 2232,-0 2232,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="2082" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="2103" text-anchor="start">RepartitionTransformModel</text></a></g></g><!-- node11 --><g class="node class" id="graph26_11"><g id="a_class|graph26_11"><a xlink:title="com.modelicious.in.transform.RepartitionTransform" xlink:href="RepartitionTransform.html#inheritance-diagram"><polygon points="4693,-25 4559,-25 4559,-0 4693,-0 4693,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="4569" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="4590" text-anchor="start">RepartitionTransform</text></a></g></g><!-- node14 --><g class="node class" id="graph26_14"><g id="a_class|graph26_14"><a xlink:title="com.modelicious.in.transform.RemoveOutliersModel" xlink:href="RemoveOutliersModel.html#inheritance-diagram"><polygon points="2389.5,-25 2250.5,-25 2250.5,-0 2389.5,-0 2389.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="2261" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="2282" text-anchor="start">RemoveOutliersModel</text></a></g></g><!-- node15 --><g class="node class" id="graph26_15"><g id="a_class|graph26_15"><a xlink:title="com.modelicious.in.transform.RemoveOutliers" xlink:href="RemoveOutliers.html#inheritance-diagram"><polygon points="4824.5,-25 4711.5,-25 4711.5,-0 4824.5,-0 4824.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="4722" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="4743" text-anchor="start">RemoveOutliers</text></a></g></g><!-- node18 --><g class="node class" id="graph26_18"><g id="a_class|graph26_18"><a xlink:title="com.modelicious.in.transform.PurgeInvariantTransformModel" xlink:href="PurgeInvariantTransformModel.html#inheritance-diagram"><polygon points="2582,-25 2408,-25 2408,-0 2582,-0 2582,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="2418" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="2439" text-anchor="start">PurgeInvariantTransformModel</text></a></g></g><!-- node19 --><g class="node class" id="graph26_19"><g id="a_class|graph26_19"><a xlink:title="com.modelicious.in.transform.PurgeInvariantTransform" xlink:href="PurgeInvariantTransform.html#inheritance-diagram"><polygon points="4991,-25 4843,-25 4843,-0 4991,-0 4991,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="4853" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="4874" text-anchor="start">PurgeInvariantTransform</text></a></g></g><!-- node20 --><g class="node class" id="graph26_20"><g id="a_class|graph26_20"><a xlink:title="com.modelicious.in.transform.PurgeCorrelatedTransformModel" xlink:href="PurgeCorrelatedTransformModel.html#inheritance-diagram"><polygon points="2783.5,-25 2600.5,-25 2600.5,-0 2783.5,-0 2783.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="2611" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="2632" text-anchor="start">PurgeCorrelatedTransformModel</text></a></g></g><!-- node21 --><g class="node class" id="graph26_21"><g id="a_class|graph26_21"><a xlink:title="com.modelicious.in.transform.PurgeCorrelatedTransform" xlink:href="PurgeCorrelatedTransform.html#inheritance-diagram"><polygon points="5166.5,-25 5009.5,-25 5009.5,-0 5166.5,-0 5166.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="5020" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="5041" text-anchor="start">PurgeCorrelatedTransform</text></a></g></g><!-- node22 --><g class="node class" id="graph26_22"><g id="a_class|graph26_22"><a xlink:title="com.modelicious.in.transform.PCATransformModel" xlink:href="PCATransformModel.html#inheritance-diagram"><polygon points="2936,-25 2802,-25 2802,-0 2936,-0 2936,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="2812" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="2833" text-anchor="start">PCATransformModel</text></a></g></g><!-- node23 --><g class="node class" id="graph26_23"><g id="a_class|graph26_23"><a xlink:title="com.modelicious.in.transform.PCATransform" xlink:href="PCATransform.html#inheritance-diagram"><polygon points="5293,-25 5185,-25 5185,-0 5293,-0 5293,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="5195" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="5216" text-anchor="start">PCATransform</text></a></g></g><!-- node26 --><g class="node class" id="graph26_26"><g id="a_class|graph26_26"><a xlink:title="com.modelicious.in.transform.OnesBalancerTransformModel" xlink:href="OnesBalancerTransformModel.html#inheritance-diagram"><polygon points="3129.5,-25 2954.5,-25 2954.5,-0 3129.5,-0 3129.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="2965" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="2986" text-anchor="start">OnesBalancerTransformModel</text></a></g></g><!-- node27 --><g class="node class" id="graph26_27"><g id="a_class|graph26_27"><a xlink:title="com.modelicious.in.transform.OnesBalancerTransform" xlink:href="OnesBalancerTransform.html#inheritance-diagram"><polygon points="5460.5,-25 5311.5,-25 5311.5,-0 5460.5,-0 5460.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="5322" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="5343" text-anchor="start">OnesBalancerTransform</text></a></g></g><!-- node28 --><g class="node class" id="graph26_28"><g id="a_class|graph26_28"><a xlink:title="com.modelicious.in.transform.OneHotTransformModel" xlink:href="OneHotTransformModel.html#inheritance-diagram"><polygon points="3294.5,-25 3147.5,-25 3147.5,-0 3294.5,-0 3294.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="3158" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="3179" text-anchor="start">OneHotTransformModel</text></a></g></g><!-- node29 --><g class="node class" id="graph26_29"><g id="a_class|graph26_29"><a xlink:title="com.modelicious.in.transform.OneHotTransform" xlink:href="OneHotTransform.html#inheritance-diagram"><polygon points="5599,-25 5479,-25 5479,-0 5599,-0 5599,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="5489" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="5510" text-anchor="start">OneHotTransform</text></a></g></g><!-- node31 --><g class="node class" id="graph26_31"><g id="a_class|graph26_31"><a xlink:title="com.modelicious.in.transform.MathTransformModel" xlink:href="MathTransformModel.html#inheritance-diagram"><polygon points="3447.5,-25 3312.5,-25 3312.5,-0 3447.5,-0 3447.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="3323" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="3344" text-anchor="start">MathTransformModel</text></a></g></g><!-- node32 --><g class="node class" id="graph26_32"><g id="a_class|graph26_32"><a xlink:title="com.modelicious.in.transform.MathTransform" xlink:href="MathTransform.html#inheritance-diagram"><polygon points="5726.5,-25 5617.5,-25 5617.5,-0 5726.5,-0 5726.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="5628" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="5649" text-anchor="start">MathTransform</text></a></g></g><!-- node34 --><g class="node class" id="graph26_34"><g id="a_class|graph26_34"><a xlink:title="com.modelicious.in.transform.FilterTransformModel" xlink:href="FilterTransformModel.html#inheritance-diagram"><polygon points="3600.5,-25 3465.5,-25 3465.5,-0 3600.5,-0 3600.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="3476" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="3497" text-anchor="start">FilterTransformModel</text></a></g></g><!-- node35 --><g class="node class" id="graph26_35"><g id="a_class|graph26_35"><a xlink:title="com.modelicious.in.transform.FilterTransform" xlink:href="FilterTransform.html#inheritance-diagram"><polygon points="5853.5,-25 5744.5,-25 5744.5,-0 5853.5,-0 5853.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="5755" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="5776" text-anchor="start">FilterTransform</text></a></g></g><!-- node38 --><g class="node class" id="graph26_38"><g id="a_class|graph26_38"><a xlink:title="com.modelicious.in.transform.FeatureSelectorTransformModel" xlink:href="FeatureSelectorTransformModel.html#inheritance-diagram"><polygon points="3801.5,-25 3618.5,-25 3618.5,-0 3801.5,-0 3801.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="3629" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="3650" text-anchor="start">FeatureSelectorTransformModel</text></a></g></g><!-- node39 --><g class="node class" id="graph26_39"><g id="a_class|graph26_39"><a xlink:title="com.modelicious.in.transform.FeatureSelectorTransform" xlink:href="FeatureSelectorTransform.html#inheritance-diagram"><polygon points="6028,-25 5872,-25 5872,-0 6028,-0 6028,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="5882" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="5903" text-anchor="start">FeatureSelectorTransform</text></a></g></g><!-- node40 --><g class="node class" id="graph26_40"><g id="a_class|graph26_40"><a xlink:title="com.modelicious.in.transform.DropTransformModel" xlink:href="DropTransformModel.html#inheritance-diagram"><polygon points="3954,-25 3820,-25 3820,-0 3954,-0 3954,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="3830" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="3851" text-anchor="start">DropTransformModel</text></a></g></g><!-- node41 --><g class="node class" id="graph26_41"><g id="a_class|graph26_41"><a xlink:title="com.modelicious.in.transform.DropTransform" xlink:href="DropTransform.html#inheritance-diagram"><polygon points="6154,-25 6046,-25 6046,-0 6154,-0 6154,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="6056" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="6077" text-anchor="start">DropTransform</text></a></g></g><!-- node43 --><g class="node class" id="graph26_43"><g id="a_class|graph26_43"><a xlink:title="com.modelicious.in.transform.DiscretizeTransformModel" xlink:href="DiscretizeTransformModel.html#inheritance-diagram"><polygon points="4129.5,-25 3972.5,-25 3972.5,-0 4129.5,-0 4129.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="3983" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="4004" text-anchor="start">DiscretizeTransformModel</text></a></g></g><!-- node44 --><g class="node class" id="graph26_44"><g id="a_class|graph26_44"><a xlink:title="com.modelicious.in.transform.DiscretizeTransform" xlink:href="DiscretizeTransform.html#inheritance-diagram"><polygon points="6303.5,-25 6172.5,-25 6172.5,-0 6303.5,-0 6303.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-19.5" x="6183" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="6204" text-anchor="start">DiscretizeTransform</text></a></g></g><!-- node46 --><g class="node class" id="graph26_46"><g id="a_class|graph26_46"><a xlink:title="com.modelicious.in.transform.DataTransformerModel" xlink:href="DataTransformerModel.html#inheritance-diagram"><polygon points="2945.5,-86 2792.5,-86 2792.5,-61 2945.5,-61 2945.5,-86" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-80.5" x="2803" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-70.5" x="2824" text-anchor="start">DataTransformerModel[T]</text></a></g></g><!-- node46&#45;&gt;node1 --><g class="edge inheritance" id="graph26_46_1"><g id="a_inheritance|graph26_46_1"><a xlink:title="StandarTransformModel is a subtype of DataTransformerModel[T]"><path d="M2787.14,-71.7955C2600.5,-69.5923 2129.28,-60.6519 1737,-25 1734.28,-24.7528 1731.51,-24.4789 1728.72,-24.1837" stroke="#d4d4d4" fill="none"></path><polygon points="2787.29,-73.5472 2792.31,-71.8556 2787.33,-70.0474 2787.29,-73.5472" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node4 --><g class="edge inheritance" id="graph26_46_4"><g id="a_inheritance|graph26_46_4"><a xlink:title="SaveTransformModel is a subtype of DataTransformerModel[T]"><path d="M2787.01,-71.2771C2618.69,-68.159 2222.15,-57.6881 1891,-25 1887.91,-24.6946 1884.75,-24.3513 1881.56,-23.9793" stroke="#d4d4d4" fill="none"></path><polygon points="2787.38,-73.0341 2792.41,-71.3761 2787.44,-69.5347 2787.38,-73.0341" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node7 --><g class="edge inheritance" id="graph26_46_7"><g id="a_inheritance|graph26_46_7"><a xlink:title="SamplingTransformModel is a subtype of DataTransformerModel[T]"><path d="M2787.34,-69.6879C2641.61,-64.2239 2327.24,-50.4182 2063,-25 2060.15,-24.726 2057.25,-24.4292 2054.32,-24.1147" stroke="#d4d4d4" fill="none"></path><polygon points="2787.39,-71.441 2792.45,-69.8788 2787.52,-67.9434 2787.39,-71.441" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node10 --><g class="edge inheritance" id="graph26_46_10"><g id="a_inheritance|graph26_46_10"><a xlink:title="RepartitionTransformModel is a subtype of DataTransformerModel[T]"><path d="M2786.74,-67.6735C2666.65,-60.3101 2436.33,-44.9926 2241,-25 2238.06,-24.6986 2235.06,-24.3786 2232.03,-24.0444" stroke="#d4d4d4" fill="none"></path><polygon points="2786.93,-69.438 2792.03,-67.9966 2787.14,-65.9445 2786.93,-69.438" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node14 --><g class="edge inheritance" id="graph26_46_14"><g id="a_inheritance|graph26_46_14"><a xlink:title="RemoveOutliersModel is a subtype of DataTransformerModel[T]"><path d="M2787.11,-65.3202C2693.23,-56.8355 2534.81,-41.7391 2399,-25 2395.97,-24.627 2392.88,-24.2332 2389.76,-23.8249" stroke="#d4d4d4" fill="none"></path><polygon points="2787.22,-67.0878 2792.36,-65.7943 2787.54,-63.602 2787.22,-67.0878" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node18 --><g class="edge inheritance" id="graph26_46_18"><g id="a_inheritance|graph26_46_18"><a xlink:title="PurgeInvariantTransformModel is a subtype of DataTransformerModel[T]"><path d="M2790.93,-60.1844C2725.34,-49.8371 2632.3,-35.1591 2568.13,-25.0371" stroke="#d4d4d4" fill="none"></path><polygon points="2790.79,-61.9336 2796,-60.9841 2791.33,-58.4763 2790.79,-61.9336" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node20 --><g class="edge inheritance" id="graph26_46_20"><g id="a_inheritance|graph26_46_20"><a xlink:title="PurgeCorrelatedTransformModel is a subtype of DataTransformerModel[T]"><path d="M2829.61,-59.3697C2798.79,-49.0954 2756.33,-34.9445 2726.76,-25.0875" stroke="#d4d4d4" fill="none"></path><polygon points="2829.16,-61.0631 2834.45,-60.9841 2830.26,-57.7427 2829.16,-61.0631" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node22 --><g class="edge inheritance" id="graph26_46_22"><g id="a_inheritance|graph26_46_22"><a xlink:title="PCATransformModel is a subtype of DataTransformerModel[T]"><path d="M2869,-55.6874C2869,-45.9173 2869,-33.8534 2869,-25.1323" stroke="#d4d4d4" fill="none"></path><polygon points="2867.25,-55.8435 2869,-60.8435 2870.75,-55.8435 2867.25,-55.8435" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node26 --><g class="edge inheritance" id="graph26_46_26"><g id="a_inheritance|graph26_46_26"><a xlink:title="OnesBalancerTransformModel is a subtype of DataTransformerModel[T]"><path d="M2907.5,-59.3697C2937.63,-49.0954 2979.12,-34.9445 3008.02,-25.0875" stroke="#d4d4d4" fill="none"></path><polygon points="2906.93,-57.7138 2902.77,-60.9841 2908.06,-61.0265 2906.93,-57.7138" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node28 --><g class="edge inheritance" id="graph26_46_28"><g id="a_inheritance|graph26_46_28"><a xlink:title="OneHotTransformModel is a subtype of DataTransformerModel[T]"><path d="M2942.85,-60.1222C3004.56,-49.7783 3091.9,-35.1388 3152.17,-25.0371" stroke="#d4d4d4" fill="none"></path><polygon points="2942.35,-58.4316 2937.7,-60.9841 2942.93,-61.8835 2942.35,-58.4316" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node31 --><g class="edge inheritance" id="graph26_46_31"><g id="a_inheritance|graph26_46_31"><a xlink:title="MathTransformModel is a subtype of DataTransformerModel[T]"><path d="M2950.7,-64.5238C3038.02,-55.7727 3180.47,-40.8491 3303,-25 3306.08,-24.6012 3309.23,-24.1813 3312.41,-23.7471" stroke="#d4d4d4" fill="none"></path><polygon points="2950.35,-62.8001 2945.55,-65.0394 2950.7,-66.2827 2950.35,-62.8001" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node34 --><g class="edge inheritance" id="graph26_46_34"><g id="a_inheritance|graph26_46_34"><a xlink:title="FilterTransformModel is a subtype of DataTransformerModel[T]"><path d="M2950.61,-67.6425C3064.15,-60.4873 3276.1,-45.6894 3456,-25 3459.09,-24.6448 3462.24,-24.2606 3465.43,-23.8555" stroke="#d4d4d4" fill="none"></path><polygon points="2950.49,-65.8964 2945.61,-67.9566 2950.71,-69.3895 2950.49,-65.8964" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node38 --><g class="edge inheritance" id="graph26_46_38"><g id="a_inheritance|graph26_46_38"><a xlink:title="FeatureSelectorTransformModel is a subtype of DataTransformerModel[T]"><path d="M2950.72,-68.573C3087.23,-61.718 3370.2,-46.2465 3609,-25 3612.08,-24.7263 3615.2,-24.4363 3618.36,-24.1335" stroke="#d4d4d4" fill="none"></path><polygon points="2950.44,-66.8351 2945.53,-68.8332 2950.61,-70.3307 2950.44,-66.8351" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node40 --><g class="edge inheritance" id="graph26_46_40"><g id="a_inheritance|graph26_46_40"><a xlink:title="DropTransformModel is a subtype of DataTransformerModel[T]"><path d="M2950.98,-71.0572C3114.65,-67.5818 3493.39,-56.5573 3810,-25 3813.23,-24.6783 3816.53,-24.3158 3819.86,-23.923" stroke="#d4d4d4" fill="none"></path><polygon points="2950.69,-69.3129 2945.73,-71.1677 2950.76,-72.8121 2950.69,-69.3129" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node46&#45;&gt;node43 --><g class="edge inheritance" id="graph26_46_43"><g id="a_inheritance|graph26_46_43"><a xlink:title="DiscretizeTransformModel is a subtype of DataTransformerModel[T]"><path d="M2950.79,-71.3664C3132.92,-68.3126 3585.61,-57.7898 3963,-25 3966.07,-24.7333 3969.2,-24.438 3972.35,-24.1203" stroke="#d4d4d4" fill="none"></path><polygon points="2950.71,-69.6174 2945.74,-71.4503 2950.77,-73.1169 2950.71,-69.6174" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47 --><g class="node class" id="graph26_47"><g id="a_class|graph26_47"><a xlink:title="com.modelicious.in.transform.DataTransformer" xlink:href="DataTransformer.html#inheritance-diagram"><polygon points="5302.5,-86 5175.5,-86 5175.5,-61 5302.5,-61 5302.5,-86" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../lib/class_diagram.png" y="-80.5" x="5186" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-70.5" x="5207" text-anchor="start">DataTransformer[T]</text></a></g></g><!-- node47&#45;&gt;node2 --><g class="edge inheritance" id="graph26_47_2"><g id="a_inheritance|graph26_47_2"><a xlink:title="StandarTransform is a subtype of DataTransformer[T]"><path d="M5170.21,-71.7744C5012.18,-69.5237 4611.16,-60.4846 4278,-25 4274.94,-24.6739 4271.81,-24.3018 4268.65,-23.8959" stroke="#d4d4d4" fill="none"></path><polygon points="5170.25,-73.525 5175.27,-71.8454 5170.3,-70.0254 5170.25,-73.525" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node5 --><g class="edge inheritance" id="graph26_47_5"><g id="a_inheritance|graph26_47_5"><a xlink:title="SaveTransform is a subtype of DataTransformer[T]"><path d="M5170.39,-71.4667C5027.38,-68.6824 4687.2,-58.7708 4404,-25 4401.13,-24.6577 4398.19,-24.2663 4395.23,-23.8393" stroke="#d4d4d4" fill="none"></path><polygon points="5170.36,-73.2163 5175.39,-71.5627 5170.43,-69.717 5170.36,-73.2163" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node8 --><g class="edge inheritance" id="graph26_47_8"><g id="a_inheritance|graph26_47_8"><a xlink:title="SamplingTransform is a subtype of DataTransformer[T]"><path d="M5170.11,-69.7466C5045.88,-64.3378 4776.22,-50.5665 4550,-25 4547.07,-24.6686 4544.07,-24.3039 4541.05,-23.9146" stroke="#d4d4d4" fill="none"></path><polygon points="5170.12,-71.4986 5175.19,-69.9667 5170.27,-68.0019 5170.12,-71.4986" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node11 --><g class="edge inheritance" id="graph26_47_11"><g id="a_inheritance|graph26_47_11"><a xlink:title="RepartitionTransform is a subtype of DataTransformer[T]"><path d="M5170.12,-67.7789C5067.8,-60.4557 4869.69,-45.0844 4702,-25 4699.09,-24.6509 4696.11,-24.2768 4693.11,-23.8847" stroke="#d4d4d4" fill="none"></path><polygon points="5170.1,-69.5324 5175.22,-68.1429 5170.35,-66.0413 5170.1,-69.5324" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node15 --><g class="edge inheritance" id="graph26_47_15"><g id="a_inheritance|graph26_47_15"><a xlink:title="RemoveOutliers is a subtype of DataTransformer[T]"><path d="M5170.14,-65.606C5089.43,-57.2522 4951.73,-42.1478 4834,-25 4831.01,-24.5642 4827.94,-24.0982 4824.85,-23.6128" stroke="#d4d4d4" fill="none"></path><polygon points="5170.22,-67.3734 5175.37,-66.1464 5170.58,-63.8919 5170.22,-67.3734" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node19 --><g class="edge inheritance" id="graph26_47_19"><g id="a_inheritance|graph26_47_19"><a xlink:title="PurgeInvariantTransform is a subtype of DataTransformer[T]"><path d="M5171.11,-60.0598C5114.67,-49.7195 5034.99,-35.1186 4979.97,-25.0371" stroke="#d4d4d4" fill="none"></path><polygon points="5170.92,-61.8043 5176.15,-60.9841 5171.55,-58.3616 5170.92,-61.8043" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node21 --><g class="edge inheritance" id="graph26_47_21"><g id="a_inheritance|graph26_47_21"><a xlink:title="PurgeCorrelatedTransform is a subtype of DataTransformer[T]"><path d="M5204.74,-59.1152C5178.5,-48.8627 5142.68,-34.8634 5117.66,-25.0875" stroke="#d4d4d4" fill="none"></path><polygon points="5204.23,-60.7944 5209.53,-60.9841 5205.51,-57.5344 5204.23,-60.7944" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node23 --><g class="edge inheritance" id="graph26_47_23"><g id="a_inheritance|graph26_47_23"><a xlink:title="PCATransform is a subtype of DataTransformer[T]"><path d="M5239,-55.6874C5239,-45.9173 5239,-33.8534 5239,-25.1323" stroke="#d4d4d4" fill="none"></path><polygon points="5237.25,-55.8435 5239,-60.8435 5240.75,-55.8435 5237.25,-55.8435" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node27 --><g class="edge inheritance" id="graph26_47_27"><g id="a_inheritance|graph26_47_27"><a xlink:title="OnesBalancerTransform is a subtype of DataTransformer[T]"><path d="M5272.35,-59.1152C5297.89,-48.8627 5332.77,-34.8634 5357.13,-25.0875" stroke="#d4d4d4" fill="none"></path><polygon points="5271.68,-57.4976 5267.69,-60.9841 5272.98,-60.7458 5271.68,-57.4976" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node29 --><g class="edge inheritance" id="graph26_47_29"><g id="a_inheritance|graph26_47_29"><a xlink:title="OneHotTransform is a subtype of DataTransformer[T]"><path d="M5302.57,-59.9973C5355.13,-49.6608 5429.18,-35.0983 5480.34,-25.0371" stroke="#d4d4d4" fill="none"></path><polygon points="5302.12,-58.3021 5297.56,-60.9841 5302.8,-61.7363 5302.12,-58.3021" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node32 --><g class="edge inheritance" id="graph26_47_32"><g id="a_inheritance|graph26_47_32"><a xlink:title="MathTransform is a subtype of DataTransformer[T]"><path d="M5308.06,-64.6501C5382.31,-55.9683 5503.73,-41.0683 5608,-25 5611.01,-24.5357 5614.1,-24.0415 5617.22,-23.5288" stroke="#d4d4d4" fill="none"></path><polygon points="5307.56,-62.9464 5302.8,-65.2643 5307.97,-66.4228 5307.56,-62.9464" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node35 --><g class="edge inheritance" id="graph26_47_35"><g id="a_inheritance|graph26_47_35"><a xlink:title="FilterTransform is a subtype of DataTransformer[T]"><path d="M5307.83,-67.7863C5403.96,-60.779 5583.76,-46.1313 5736,-25 5738.75,-24.6179 5741.57,-24.2007 5744.41,-23.759" stroke="#d4d4d4" fill="none"></path><polygon points="5307.61,-66.0474 5302.75,-68.155 5307.86,-69.5383 5307.61,-66.0474" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node39 --><g class="edge inheritance" id="graph26_47_39"><g id="a_inheritance|graph26_47_39"><a xlink:title="FeatureSelectorTransform is a subtype of DataTransformer[T]"><path d="M5307.94,-68.5058C5423.08,-61.5534 5661.75,-45.9442 5863,-25 5865.88,-24.7004 5868.81,-24.3818 5871.77,-24.0489" stroke="#d4d4d4" fill="none"></path><polygon points="5307.77,-66.7626 5302.88,-68.8101 5307.98,-70.2562 5307.77,-66.7626" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node41 --><g class="edge inheritance" id="graph26_47_41"><g id="a_inheritance|graph26_47_41"><a xlink:title="DropTransform is a subtype of DataTransformer[T]"><path d="M5307.85,-71.2066C5446.37,-67.9861 5768.49,-57.3773 6037,-25 6039.87,-24.6539 6042.81,-24.2595 6045.77,-23.8302" stroke="#d4d4d4" fill="none"></path><polygon points="5307.55,-69.4628 5302.59,-71.3272 5307.63,-72.9618 5307.55,-69.4628" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node47&#45;&gt;node44 --><g class="edge inheritance" id="graph26_47_44"><g id="a_inheritance|graph26_47_44"><a xlink:title="DiscretizeTransform is a subtype of DataTransformer[T]"><path d="M5308.12,-71.3257C5462.05,-68.1899 5844.58,-57.5127 6163,-25 6166.01,-24.6922 6169.09,-24.3469 6172.2,-23.9734" stroke="#d4d4d4" fill="none"></path><polygon points="5307.71,-69.5836 5302.74,-71.4341 5307.78,-73.0829 5307.71,-69.5836" stroke="#d4d4d4" fill="none"></polygon></a></g></g></g></svg></div>
+              </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="com.modelicious.in.transform"><span>transform</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.modelicious.in.transform.DataTransformer" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DataTransformer[T&lt;:com.modelicious.in.transform.TransformerState]extendsAnyRef"></a>
+      <a id="DataTransformer[T&lt;:TransformerState]:DataTransformer[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DataTransformer.html"><span class="name">DataTransformer</span></a><span class="tparams">[<span name="T">T &lt;: <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a></span>]</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4>
+      <p class="comment cmt">Base class for all transformer objects.</p>
+    </li><li name="com.modelicious.in.transform.DataTransformerModel" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DataTransformerModel[T&lt;:com.modelicious.in.transform.TransformerState]extendsAnyRef"></a>
+      <a id="DataTransformerModel[T&lt;:TransformerState]:DataTransformerModel[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DataTransformerModel.html"><span class="name">DataTransformerModel</span></a><span class="tparams">[<span name="T">T &lt;: <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a></span>]</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4>
+      <p class="comment cmt">Base class for all transformer model objects.</p>
+    </li><li name="com.modelicious.in.transform.DenseMatrixExtender" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DenseMatrixExtenderextendsAnyRef"></a>
+      <a id="DenseMatrixExtender:DenseMatrixExtender"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="package$$DenseMatrixExtender.html"><span class="name">DenseMatrixExtender</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.DiscretizeTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DiscretizeTransformextendsDataTransformer[com.modelicious.in.transform.discretize]"></a>
+      <a id="DiscretizeTransform:DiscretizeTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DiscretizeTransform.html"><span class="name">DiscretizeTransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="discretize.html" class="extype" name="com.modelicious.in.transform.discretize">discretize</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.DiscretizeTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DiscretizeTransformModelextendsDataTransformerModel[com.modelicious.in.transform.discretize]"></a>
+      <a id="DiscretizeTransformModel:DiscretizeTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DiscretizeTransformModel.html"><span class="name">DiscretizeTransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="discretize.html" class="extype" name="com.modelicious.in.transform.discretize">discretize</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.DropTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DropTransformextendsDataTransformer[com.modelicious.in.transform.drop]"></a>
+      <a id="DropTransform:DropTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DropTransform.html"><span class="name">DropTransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="drop.html" class="extype" name="com.modelicious.in.transform.drop">drop</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.DropTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DropTransformModelextendsDataTransformerModel[com.modelicious.in.transform.drop]"></a>
+      <a id="DropTransformModel:DropTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DropTransformModel.html"><span class="name">DropTransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="drop.html" class="extype" name="com.modelicious.in.transform.drop">drop</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.FeatureSelectorTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FeatureSelectorTransformextendsDataTransformer[com.modelicious.in.transform.feature_selection]"></a>
+      <a id="FeatureSelectorTransform:FeatureSelectorTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FeatureSelectorTransform.html"><span class="name">FeatureSelectorTransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="feature_selection.html" class="extype" name="com.modelicious.in.transform.feature_selection">feature_selection</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.FeatureSelectorTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FeatureSelectorTransformModelextendsDataTransformerModel[com.modelicious.in.transform.feature_selection]"></a>
+      <a id="FeatureSelectorTransformModel:FeatureSelectorTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FeatureSelectorTransformModel.html"><span class="name">FeatureSelectorTransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="feature_selection.html" class="extype" name="com.modelicious.in.transform.feature_selection">feature_selection</a>]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Feature selector based on Work by https://github.</p>
+    </li><li name="com.modelicious.in.transform.FilterTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FilterTransformextendsDataTransformer[com.modelicious.in.transform.filter]"></a>
+      <a id="FilterTransform:FilterTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FilterTransform.html"><span class="name">FilterTransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="filter.html" class="extype" name="com.modelicious.in.transform.filter">filter</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.FilterTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FilterTransformModelextendsDataTransformerModel[com.modelicious.in.transform.filter]"></a>
+      <a id="FilterTransformModel:FilterTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FilterTransformModel.html"><span class="name">FilterTransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="filter.html" class="extype" name="com.modelicious.in.transform.filter">filter</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.MapOfDoubles" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MapOfDoublesextendsAnyRef"></a>
+      <a id="MapOfDoubles:MapOfDoubles"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="package$$MapOfDoubles.html"><span class="name">MapOfDoubles</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.MapOfLongs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MapOfLongsextendsAnyRef"></a>
+      <a id="MapOfLongs:MapOfLongs"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="package$$MapOfLongs.html"><span class="name">MapOfLongs</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.MapOutliersStats" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MapOutliersStats=Map[String,com.modelicious.in.transform.package.OutliersStats]"></a>
+      <a id="MapOutliersStats:MapOutliersStats"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">MapOutliersStats</span><span class="result"> = <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.collection.immutable.Map" class="extype" target="_top">Map</a>[<span class="extype" name="scala.Predef.String">String</span>, <a href="package$$OutliersStats.html" class="extype" name="com.modelicious.in.transform.OutliersStats">OutliersStats</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.MathTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MathTransformextendsDataTransformer[com.modelicious.in.transform.mathT]"></a>
+      <a id="MathTransform:MathTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MathTransform.html"><span class="name">MathTransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="mathT.html" class="extype" name="com.modelicious.in.transform.mathT">mathT</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.MathTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MathTransformModelextendsDataTransformerModel[com.modelicious.in.transform.mathT]"></a>
+      <a id="MathTransformModel:MathTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MathTransformModel.html"><span class="name">MathTransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="mathT.html" class="extype" name="com.modelicious.in.transform.mathT">mathT</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.ModelCreator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ModelCreator[T&lt;:com.modelicious.in.transform.TransformerState]=com.modelicious.in.transform.TransformerState=&gt;com.modelicious.in.transform.DataTransformerModel[T]"></a>
+      <a id="ModelCreator[T&lt;:TransformerState]:(TransformerState)⇒DataTransformerModel[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ModelCreator</span><span class="tparams">[<span name="T">T &lt;: <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a></span>]</span><span class="result"> = (<a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a>) ⇒ <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<span class="extype" name="com.modelicious.in.transform.ModelCreator.T">T</span>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.OneHotLabels" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OneHotLabels=Map[String,Array[String]]"></a>
+      <a id="OneHotLabels:OneHotLabels"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">OneHotLabels</span><span class="result"> = <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.collection.immutable.Map" class="extype" target="_top">Map</a>[<span class="extype" name="scala.Predef.String">String</span>, <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Array" class="extype" target="_top">Array</a>[<span class="extype" name="scala.Predef.String">String</span>]]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.OneHotLabelsExtender" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OneHotLabelsExtenderextendsAnyRef"></a>
+      <a id="OneHotLabelsExtender:OneHotLabelsExtender"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="package$$OneHotLabelsExtender.html"><span class="name">OneHotLabelsExtender</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.OneHotTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OneHotTransformextendsDataTransformer[com.modelicious.in.transform.onehot]"></a>
+      <a id="OneHotTransform:OneHotTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OneHotTransform.html"><span class="name">OneHotTransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="onehot.html" class="extype" name="com.modelicious.in.transform.onehot">onehot</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.OneHotTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OneHotTransformModelextendsDataTransformerModel[com.modelicious.in.transform.onehot]"></a>
+      <a id="OneHotTransformModel:OneHotTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OneHotTransformModel.html"><span class="name">OneHotTransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="onehot.html" class="extype" name="com.modelicious.in.transform.onehot">onehot</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.OnesBalancerTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OnesBalancerTransformextendsDataTransformer[com.modelicious.in.transform.ones_balancer]"></a>
+      <a id="OnesBalancerTransform:OnesBalancerTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OnesBalancerTransform.html"><span class="name">OnesBalancerTransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="ones_balancer.html" class="extype" name="com.modelicious.in.transform.ones_balancer">ones_balancer</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.OnesBalancerTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OnesBalancerTransformModelextendsDataTransformerModel[com.modelicious.in.transform.ones_balancer]"></a>
+      <a id="OnesBalancerTransformModel:OnesBalancerTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OnesBalancerTransformModel.html"><span class="name">OnesBalancerTransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="ones_balancer.html" class="extype" name="com.modelicious.in.transform.ones_balancer">ones_balancer</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.OutliersExtender" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OutliersExtenderextendsAnyRef"></a>
+      <a id="OutliersExtender:OutliersExtender"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="package$$OutliersExtender.html"><span class="name">OutliersExtender</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.OutliersStats" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OutliersStatsextendsProductwithSerializable"></a>
+      <a id="OutliersStats:OutliersStats"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="package$$OutliersStats.html"><span class="name">OutliersStats</span></a><span class="params">(<span name="count">count: <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Long" class="extype" target="_top">Long</a></span>, <span name="mean">mean: <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Double" class="extype" target="_top">Double</a></span>, <span name="std">std: <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Double" class="extype" target="_top">Double</a></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.PCATransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PCATransformextendsDataTransformer[com.modelicious.in.transform.pca]"></a>
+      <a id="PCATransform:PCATransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PCATransform.html"><span class="name">PCATransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="pca.html" class="extype" name="com.modelicious.in.transform.pca">pca</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.PCATransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PCATransformModelextendsDataTransformerModel[com.modelicious.in.transform.pca]"></a>
+      <a id="PCATransformModel:PCATransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PCATransformModel.html"><span class="name">PCATransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="pca.html" class="extype" name="com.modelicious.in.transform.pca">pca</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.PurgeCorrelatedTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PurgeCorrelatedTransformextendsDataTransformer[com.modelicious.in.transform.purge_correlated]"></a>
+      <a id="PurgeCorrelatedTransform:PurgeCorrelatedTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PurgeCorrelatedTransform.html"><span class="name">PurgeCorrelatedTransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="purge_correlated.html" class="extype" name="com.modelicious.in.transform.purge_correlated">purge_correlated</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.PurgeCorrelatedTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PurgeCorrelatedTransformModelextendsDataTransformerModel[com.modelicious.in.transform.purge_correlated]"></a>
+      <a id="PurgeCorrelatedTransformModel:PurgeCorrelatedTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PurgeCorrelatedTransformModel.html"><span class="name">PurgeCorrelatedTransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="purge_correlated.html" class="extype" name="com.modelicious.in.transform.purge_correlated">purge_correlated</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.PurgeInvariantTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PurgeInvariantTransformextendsDataTransformer[com.modelicious.in.transform.purge_invariant]"></a>
+      <a id="PurgeInvariantTransform:PurgeInvariantTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PurgeInvariantTransform.html"><span class="name">PurgeInvariantTransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="purge_invariant.html" class="extype" name="com.modelicious.in.transform.purge_invariant">purge_invariant</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.PurgeInvariantTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PurgeInvariantTransformModelextendsDataTransformerModel[com.modelicious.in.transform.purge_invariant]"></a>
+      <a id="PurgeInvariantTransformModel:PurgeInvariantTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PurgeInvariantTransformModel.html"><span class="name">PurgeInvariantTransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="purge_invariant.html" class="extype" name="com.modelicious.in.transform.purge_invariant">purge_invariant</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.RemoveOutliers" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RemoveOutliersextendsDataTransformer[com.modelicious.in.transform.remove_outliers]"></a>
+      <a id="RemoveOutliers:RemoveOutliers"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="RemoveOutliers.html"><span class="name">RemoveOutliers</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="remove_outliers.html" class="extype" name="com.modelicious.in.transform.remove_outliers">remove_outliers</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.RemoveOutliersModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RemoveOutliersModelextendsDataTransformerModel[com.modelicious.in.transform.remove_outliers]"></a>
+      <a id="RemoveOutliersModel:RemoveOutliersModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="RemoveOutliersModel.html"><span class="name">RemoveOutliersModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="remove_outliers.html" class="extype" name="com.modelicious.in.transform.remove_outliers">remove_outliers</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.RepartitionTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RepartitionTransformextendsDataTransformer[com.modelicious.in.transform.repartition]"></a>
+      <a id="RepartitionTransform:RepartitionTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="RepartitionTransform.html"><span class="name">RepartitionTransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="repartition.html" class="extype" name="com.modelicious.in.transform.repartition">repartition</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.RepartitionTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RepartitionTransformModelextendsDataTransformerModel[com.modelicious.in.transform.repartition]"></a>
+      <a id="RepartitionTransformModel:RepartitionTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="RepartitionTransformModel.html"><span class="name">RepartitionTransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="repartition.html" class="extype" name="com.modelicious.in.transform.repartition">repartition</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.SamplingTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SamplingTransformextendsDataTransformer[com.modelicious.in.transform.sampling]"></a>
+      <a id="SamplingTransform:SamplingTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SamplingTransform.html"><span class="name">SamplingTransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="sampling.html" class="extype" name="com.modelicious.in.transform.sampling">sampling</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.SamplingTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SamplingTransformModelextendsDataTransformerModel[com.modelicious.in.transform.sampling]"></a>
+      <a id="SamplingTransformModel:SamplingTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SamplingTransformModel.html"><span class="name">SamplingTransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="sampling.html" class="extype" name="com.modelicious.in.transform.sampling">sampling</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.SaveTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SaveTransformextendsDataTransformer[com.modelicious.in.transform.save]"></a>
+      <a id="SaveTransform:SaveTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SaveTransform.html"><span class="name">SaveTransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="save.html" class="extype" name="com.modelicious.in.transform.save">save</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.SaveTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SaveTransformModelextendsDataTransformerModel[com.modelicious.in.transform.save]"></a>
+      <a id="SaveTransformModel:SaveTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SaveTransformModel.html"><span class="name">SaveTransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="save.html" class="extype" name="com.modelicious.in.transform.save">save</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.Splits" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Splits=Map[String,Array[Double]]"></a>
+      <a id="Splits:Splits"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Splits</span><span class="result"> = <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.collection.immutable.Map" class="extype" target="_top">Map</a>[<span class="extype" name="scala.Predef.String">String</span>, <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Array" class="extype" target="_top">Array</a>[<a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Double" class="extype" target="_top">Double</a>]]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.SplitsExtender" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SplitsExtenderextendsAnyRef"></a>
+      <a id="SplitsExtender:SplitsExtender"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="package$$SplitsExtender.html"><span class="name">SplitsExtender</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.StandarTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="StandarTransformextendsDataTransformer[com.modelicious.in.transform.standarize]"></a>
+      <a id="StandarTransform:StandarTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="StandarTransform.html"><span class="name">StandarTransform</span></a><span class="result"> extends <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<a href="standarize.html" class="extype" name="com.modelicious.in.transform.standarize">standarize</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.StandarTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="StandarTransformModelextendsDataTransformerModel[com.modelicious.in.transform.standarize]"></a>
+      <a id="StandarTransformModel:StandarTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="StandarTransformModel.html"><span class="name">StandarTransformModel</span></a><span class="result"> extends <a href="DataTransformerModel.html" class="extype" name="com.modelicious.in.transform.DataTransformerModel">DataTransformerModel</a>[<a href="standarize.html" class="extype" name="com.modelicious.in.transform.standarize">standarize</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.StringToStruct" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="StringToStructextendsAnyRef"></a>
+      <a id="StringToStruct:StringToStruct"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="package$$StringToStruct.html"><span class="name">StringToStruct</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.TransformCreator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TransformCreator[T&lt;:com.modelicious.in.transform.TransformerState]=()=&gt;com.modelicious.in.transform.DataTransformer[T]"></a>
+      <a id="TransformCreator[T&lt;:TransformerState]:()⇒DataTransformer[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">TransformCreator</span><span class="tparams">[<span name="T">T &lt;: <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a></span>]</span><span class="result"> = () ⇒ <a href="DataTransformer.html" class="extype" name="com.modelicious.in.transform.DataTransformer">DataTransformer</a>[<span class="extype" name="com.modelicious.in.transform.TransformCreator.T">T</span>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.TransformerState" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="TransformerStateextendsAnyRef"></a>
+      <a id="TransformerState:TransformerState"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TransformerState.html"><span class="name">TransformerState</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.TransformerStateSerializer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TransformerStateSerializer[T&lt;:com.modelicious.in.transform.TransformerState]extendsAnyRef"></a>
+      <a id="TransformerStateSerializer[T&lt;:TransformerState]:TransformerStateSerializer[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="package$$TransformerStateSerializer.html"><span class="name">TransformerStateSerializer</span></a><span class="tparams">[<span name="T">T &lt;: <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a></span>]</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.VectorExtender" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="VectorExtenderextendsAnyRef"></a>
+      <a id="VectorExtender:VectorExtender"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="package$$VectorExtender.html"><span class="name">VectorExtender</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.discretize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="discretizeextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="discretize:discretize"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="discretize.html"><span class="name">discretize</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.drop" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="dropextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="drop:drop"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="drop.html"><span class="name">drop</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.feature_selection" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="feature_selectionextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="feature_selection:feature_selection"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="feature_selection.html"><span class="name">feature_selection</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.filter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="filterextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="filter:filter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="filter.html"><span class="name">filter</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.mathT" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="mathTextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="mathT:mathT"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="mathT.html"><span class="name">mathT</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.noNumericColumn" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="noNumericColumnextendsExceptionwithProductwithSerializable"></a>
+      <a id="noNumericColumn:noNumericColumn"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="noNumericColumn.html"><span class="name">noNumericColumn</span></a><span class="params">(<span name="text">text: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Exception">Exception</span> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.onehot" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="onehotextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="onehot:onehot"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="onehot.html"><span class="name">onehot</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.ones_balancer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ones_balancerextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="ones_balancer:ones_balancer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ones_balancer.html"><span class="name">ones_balancer</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.pca" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="pcaextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="pca:pca"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="pca.html"><span class="name">pca</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.purge_correlated" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="purge_correlatedextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="purge_correlated:purge_correlated"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="purge_correlated.html"><span class="name">purge_correlated</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.purge_invariant" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="purge_invariantextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="purge_invariant:purge_invariant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="purge_invariant.html"><span class="name">purge_invariant</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.remove_outliers" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="remove_outliersextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="remove_outliers:remove_outliers"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="remove_outliers.html"><span class="name">remove_outliers</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.repartition" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="repartitionextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="repartition:repartition"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="repartition.html"><span class="name">repartition</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.sampling" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="samplingextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="sampling:sampling"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="sampling.html"><span class="name">sampling</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.save" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="saveextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="save:save"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="save.html"><span class="name">save</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.standarize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="standarizeextendsTransformerStatewithProductwithSerializable"></a>
+      <a id="standarize:standarize"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="standarize.html"><span class="name">standarize</span></a><span class="params">()</span><span class="result"> extends <a href="TransformerState.html" class="extype" name="com.modelicious.in.transform.TransformerState">TransformerState</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.modelicious.in.transform.DataTransformRegistrar" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DataTransformRegistrar"></a>
+      <a id="DataTransformRegistrar:DataTransformRegistrar"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DataTransformRegistrar$.html"><span class="name">DataTransformRegistrar</span></a>
+      </span>
+      </h4>
+      <p class="comment cmt">This object is used to register at once both the Transform and the TranformModel.</p>
+    </li><li name="com.modelicious.in.transform.DataTransformer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DataTransformer"></a>
+      <a id="DataTransformer:DataTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DataTransformer$.html"><span class="name">DataTransformer</span></a>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.DataTransformerModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DataTransformerModel"></a>
+      <a id="DataTransformerModel:DataTransformerModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DataTransformerModel$.html"><span class="name">DataTransformerModel</span></a>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.DiscretizeTransform" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DiscretizeTransform"></a>
+      <a id="DiscretizeTransform:DiscretizeTransform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DiscretizeTransform$.html"><span class="name">DiscretizeTransform</span></a>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.RemoveOutliers" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="RemoveOutliers"></a>
+      <a id="RemoveOutliers:RemoveOutliers"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RemoveOutliers$.html"><span class="name">RemoveOutliers</span></a>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
+    </li><li name="com.modelicious.in.transform.StandarTransformModel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="StandarTransformModel"></a>
+      <a id="StandarTransformModel:StandarTransformModel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="StandarTransformModel$.html"><span class="name">StandarTransformModel</span></a>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.TransformerState" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TransformerState"></a>
+      <a id="TransformerState:TransformerState"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TransformerState$.html"><span class="name">TransformerState</span></a>
+      </span>
+      </h4>
+      <p class="comment cmt">Automates the deserialization from XML to a state case class.</p>
+    </li><li name="com.modelicious.in.transform.package#withRDDAndSameSchema" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="withRDDAndSameSchema(data:com.modelicious.in.data.DataWrapper)(block:org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint]=&gt;org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint]):com.modelicious.in.data.DataWrapper"></a>
+      <a id="withRDDAndSameSchema(DataWrapper)((RDD[LabeledPoint])⇒RDD[LabeledPoint]):DataWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withRDDAndSameSchema</span><span class="params">(<span name="data">data: <a href="../data/DataWrapper.html" class="extype" name="com.modelicious.in.data.DataWrapper">DataWrapper</a></span>)</span><span class="params">(<span name="block">block: (<span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<span class="extype" name="org.apache.spark.mllib.regression.LabeledPoint">LabeledPoint</span>]) ⇒ <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<span class="extype" name="org.apache.spark.mllib.regression.LabeledPoint">LabeledPoint</span>]</span>)</span><span class="result">: <a href="../data/DataWrapper.html" class="extype" name="com.modelicious.in.data.DataWrapper">DataWrapper</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.package#withRDDAndSameSchema" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="withRDDAndSameSchema(data:org.apache.spark.sql.DataFrame)(block:org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint]=&gt;org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint]):org.apache.spark.sql.DataFrame"></a>
+      <a id="withRDDAndSameSchema(DataFrame)((RDD[LabeledPoint])⇒RDD[LabeledPoint]):DataFrame"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withRDDAndSameSchema</span><span class="params">(<span name="data">data: <span class="extype" name="org.apache.spark.sql.DataFrame">DataFrame</span></span>)</span><span class="params">(<span name="block">block: (<span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<span class="extype" name="org.apache.spark.mllib.regression.LabeledPoint">LabeledPoint</span>]) ⇒ <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<span class="extype" name="org.apache.spark.mllib.regression.LabeledPoint">LabeledPoint</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.sql.DataFrame">DataFrame</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.package#withRDDAndVaryingSchema" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="withRDDAndVaryingSchema(data:com.modelicious.in.data.DataWrapper)(block:(org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint],org.apache.spark.sql.types.StructType)=&gt;(org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint],org.apache.spark.sql.types.StructType)):com.modelicious.in.data.DataWrapper"></a>
+      <a id="withRDDAndVaryingSchema(DataWrapper)((RDD[LabeledPoint],StructType)⇒(RDD[LabeledPoint],StructType)):DataWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withRDDAndVaryingSchema</span><span class="params">(<span name="data">data: <a href="../data/DataWrapper.html" class="extype" name="com.modelicious.in.data.DataWrapper">DataWrapper</a></span>)</span><span class="params">(<span name="block">block: (<span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<span class="extype" name="org.apache.spark.mllib.regression.LabeledPoint">LabeledPoint</span>], <span class="extype" name="org.apache.spark.sql.types.StructType">StructType</span>) ⇒ (<span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<span class="extype" name="org.apache.spark.mllib.regression.LabeledPoint">LabeledPoint</span>], <span class="extype" name="org.apache.spark.sql.types.StructType">StructType</span>)</span>)</span><span class="result">: <a href="../data/DataWrapper.html" class="extype" name="com.modelicious.in.data.DataWrapper">DataWrapper</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.modelicious.in.transform.package#withRDDAndVaryingSchema" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="withRDDAndVaryingSchema(data:org.apache.spark.sql.DataFrame)(block:(org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint],org.apache.spark.sql.types.StructType)=&gt;(org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint],org.apache.spark.sql.types.StructType)):org.apache.spark.sql.DataFrame"></a>
+      <a id="withRDDAndVaryingSchema(DataFrame)((RDD[LabeledPoint],StructType)⇒(RDD[LabeledPoint],StructType)):DataFrame"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withRDDAndVaryingSchema</span><span class="params">(<span name="data">data: <span class="extype" name="org.apache.spark.sql.DataFrame">DataFrame</span></span>)</span><span class="params">(<span name="block">block: (<span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<span class="extype" name="org.apache.spark.mllib.regression.LabeledPoint">LabeledPoint</span>], <span class="extype" name="org.apache.spark.sql.types.StructType">StructType</span>) ⇒ (<span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<span class="extype" name="org.apache.spark.mllib.regression.LabeledPoint">LabeledPoint</span>], <span class="extype" name="org.apache.spark.sql.types.StructType">StructType</span>)</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.sql.DataFrame">DataFrame</span></span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.10.4/index.html#scala.Any" class="extype" target="_top">Any</a></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script><script defer="defer" type="text/javascript" id="modernizr-custom-js" src="../../../../lib/modernizr.custom.js"></script><script defer="defer" type="text/javascript" id="diagrams-js" src="../../../../lib/diagrams.js"></script>
+    </body>
+      </html>

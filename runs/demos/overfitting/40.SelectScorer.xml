@@ -1,0 +1,35 @@
+<SelectScorer>
+    <options>
+        <kfolds>3</kfolds>
+        <training_rate>0.75</training_rate>
+        <overfitting_splits>0.001,0.01,0.1,0.5,1</overfitting_splits>
+        <nCategories>6</nCategories>
+        <save>
+          <local>${environment.outputdir}</local>
+          <remote>${environment.outputfiles}</remote>
+        </save>
+    </options>
+    <data>
+        <input url="hdfs:${environment.tmpfiles}/temp.dat:repartition=12"/>
+    </data>
+    <models>
+        <model name= "DT_10" id="MLDecisionTreeS" test_overfitting="true">
+            <conf>
+                <impurity>gini</impurity>
+                <maxDepth>10</maxDepth>
+                <maxBins>32</maxBins>
+                <useNodeIdCache>false</useNodeIdCache>
+            </conf>
+        </model>
+		<model name= "RF_6_4" id="MLRandomForestS" test_overfitting="true">
+			<conf>
+				<numTrees>6</numTrees>
+				<featureSubsetStrategy>auto</featureSubsetStrategy>
+				<impurity>gini</impurity>
+				<maxDepth>4</maxDepth>
+				<maxBins>32</maxBins>
+				<useNodeIdCache>true</useNodeIdCache>
+			</conf>
+		</model>
+    </models>
+</SelectScorer>

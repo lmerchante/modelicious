@@ -1,0 +1,7 @@
+<RunScorer>
+	<data>
+		<input url="csvgz:datos.checkpoint.raw.cliente.20vars.csvgz:repartition=4"/>
+    <output url="csv:predictions_SVM.csv"/>
+	</data>
+  <model url = "remote:${environment.outputfiles}/models/SVM_SC/SVM_regL2_0.01"/>
+</RunScorer>

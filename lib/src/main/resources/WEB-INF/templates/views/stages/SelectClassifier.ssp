@@ -1,0 +1,32 @@
+<%@ val stage: scala.xml.Elem %>
+<% import com.modelicious.in.html.ScalateHelpers %>
+<li> Models
+	<ul>
+	#for( m <- (stage \ "models" \ "model") )
+		<li><a href="#" class="withData">Model:${m \ "@name"} Type: ${m \ "@id"}</a>
+			<div class="dataDiv collapse">
+			<pre><code class="xml">
+<%= new scala.xml.PrettyPrinter(80, 2).format( (m \ "conf").head ) %>
+			#if (!(m \ "result" \ "stats").isEmpty)
+<%= new scala.xml.PrettyPrinter(80, 2).format( (m \ "result" \ "stats").head )  %>				
+			#end
+			</code></pre>
+			</div>
+		#if (!(m \ "result" \ "gd").isEmpty)
+			<div class="imgDiv collapse">
+				<a hidden><%= (m \ "result" \ "gd").text %></a>
+				<div id="img_container"></div>
+			</div>
+		#end
+		</li>
+	#end
+	<li class=""><a href="#" class="withData">Summary</a>
+		<div class="">
+		<%= ScalateHelpers.classifier_statistics_table( stage )  %>
+		</div>
+	</li>
+	
+	</ul>
+</li>
+
+

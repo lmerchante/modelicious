@@ -1,0 +1,515 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Results</title>
+	<!-- JQuery -->
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+   	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/default.min.css">
+
+	<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap.min.css">
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script>
+	<script type="text/javascript" src="http://code.highcharts.com/4.0.4/highcharts.js"></script>
+	<script type="text/javascript" src="http://code.highcharts.com/4.0.4/modules/exporting.js"></script>
+	<script type="text/javascript" src="http://code.highcharts.com/4.0.4/highcharts-more.js"></script>
+	
+	<script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+	
+
+	
+	<script>
+	$.fn.extend({
+    treed: function (o) {
+      
+      var openedClass = 'glyphicon-minus-sign';
+      var closedClass = 'glyphicon-plus-sign';
+      
+      if (typeof o != 'undefined'){
+        if (typeof o.openedClass != 'undefined'){
+        openedClass = o.openedClass;
+        }
+        if (typeof o.closedClass != 'undefined'){
+        closedClass = o.closedClass;
+        }
+      };
+      
+        //initialize each of the top levels
+        var tree = $(this);
+        tree.addClass("tree");
+        tree.find('li').has("ul").each(function () {
+            var branch = $(this); //li with children ul
+            branch.prepend("<i class='indicator glyphicon " + closedClass + "'></i>");
+            branch.addClass('branch');
+            branch.on('click', function (e) {
+                if (this == e.target) {
+                    var icon = $(this).children('i:first');
+                    icon.toggleClass(openedClass + " " + closedClass);
+                    $(this).children().children().toggle();
+                }
+            })
+            branch.children().children().toggle();
+        });
+        //fire event from the dynamically added icon
+      tree.find('.branch .indicator').each(function(){
+        $(this).on('click', function () {
+            $(this).closest('li').click();
+        });
+      });
+        //fire event to open branch if the li contains an anchor instead of text
+        tree.find('.branch>a').each(function () {
+            $(this).on('click', function (e) {
+                $(this).closest('li').click();
+                e.preventDefault();
+            });
+        });
+        //fire event to open branch if the li contains a button instead of text
+        tree.find('.branch>button').each(function () {
+            $(this).on('click', function (e) {
+                $(this).closest('li').click();
+                e.preventDefault();
+            });
+        });
+    }
+});
+</script>
+<script>
+$('#tree .branch').each(function(){
+var icon = $(this).children('i:first');
+icon.addClass('glyphicon-minus-sign').removeClass('glyphicon-plus-sign');
+$(this).children().children().show();
+});
+</script>
+
+	<style>
+	.tree, .tree ul {
+    margin:0;
+    padding:0;
+    list-style:none
+}
+.tree ul {
+    margin-left:1em;
+    position:relative
+}
+.tree ul ul {
+    margin-left:.5em
+}
+.tree ul:before {
+    content:"";
+    display:block;
+    width:0;
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    border-left:1px solid
+}
+.tree li {
+    margin:0;
+    padding:0 1em;
+    line-height:2em;
+    color:#369;
+    font-weight:700;
+    position:relative
+}
+.tree ul li:before {
+    content:"";
+    display:block;
+    width:10px;
+    height:0;
+    border-top:1px solid;
+    margin-top:-1px;
+    position:absolute;
+    top:1em;
+    left:0
+}
+.tree ul li:last-child:before {
+    background:#fff;
+    height:auto;
+    top:1em;
+    bottom:0
+}
+.indicator {
+    margin-right:5px;
+}
+.tree li a {
+    text-decoration: none;
+    color:#369;
+}
+.tree li a:hover {
+    text-decoration: underline;
+}
+
+.tree li button, .tree li button:active, .tree li button:focus {
+    text-decoration: none;
+    color:#369;
+    border:none;
+    background:transparent;
+    margin:0px 0px 0px 0px;
+    padding:0px 0px 0px 0px;
+    outline: 0;
+}
+
+/* results box 
+---- */
+#results pre{
+	max-height: 500px;
+	height: 500px;
+	overflow-y: scroll;
+	overflow-x: auto;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 60px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  background-color: #f5f5f5;
+}
+
+/* Fixed nav bar
+-------------------------------------------------- */
+body {
+	overflow-y: scroll;
+}
+
+body > .container-fluid {
+  padding: 60px 15px 0;
+}
+.container .text-muted {
+  margin: 20px 0;
+}
+
+.footer > .container {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+code {
+  font-size: 80%;
+}
+
+
+</style>	
+</head>
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Results for result</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><button data-toggle="collapse" data-target="#results" type="button" class="btn navbar-btn">Show Raw</button></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+	<div class="container-fluid">
+		
+
+
+
+<div class="row">
+<div class="col-md-12">
+<div id="results" class="collapse">
+<pre><code class="xml">
+&lt;result&gt;
+  &lt;PrepareData 
+  file=&quot;C:\Users\A175606\workspace\commander\runs\demos\testing\10.LoadTestDataToDB.xml&quot;&gt;
+    &lt;data&gt;
+      &lt;input 
+      url=&quot;lcsvgz:/Users/A175606/workspace/commander/runs/demos/testing//test_data.csvgz&quot;&gt;
+&lt;/input&gt;
+      &lt;output url=&quot;db:datalabin.test_table_m2440eaf1_s20171108085923:dropFirst=true&quot;&gt;
+      &lt;/output&gt;
+    &lt;/data&gt;
+    &lt;transformations/&gt;
+&lt;/PrepareData&gt;
+  &lt;LoadData 
+  file=&quot;C:\Users\A175606\workspace\commander\runs\demos\testing\11.LoadDataFromDB.xml&quot;&gt;
+    &lt;data&gt;
+      &lt;output url=&quot;memory:test_data&quot;/&gt;
+    &lt;/data&gt;
+    &lt;sql&gt;
+      &lt;table&gt;datalabin.test_table_m2440eaf1_s20171108085923&lt;/table&gt;
+      &lt;label&gt;label&lt;/label&gt;
+      &lt;columns&gt;
+        &lt;include_only&gt;
+          label,antiguedad_hasta_la_caracterizacion,edad,marca_modelicious_sin_comisiones,posee_deposito_plazo,posee_tarj_credito,saldofinal_pasivo_titprinc,numero_lineas_productos,margen_financiero_titularidad_principal_interanual,margen_ordinario_tp,saldo_medio_mensual_total_pasivo_coefvarporcentual,saldo_medio_mensual_total_pasivo_tendrelativa01m,saldo_medio_mensual_total_pasivo_tendrelativa03m,importe_lcp,tiene_lcp,nu_opernoautomoficmes_mt,nu_tjcredactv_mt,nu_ctrahorrplz_mt,im_saldmedmensuahorrvis_mt,segmento_valor,segmento_marketing
+        &lt;/include_only&gt;
+      &lt;/columns&gt;
+    &lt;/sql&gt;
+    &lt;result&gt;
+      &lt;columns_ordered&gt;
+        [(label,int),(antiguedad_hasta_la_caracterizacion,int),(edad,int),(marca_modelicious_sin_comisiones,int),(posee_deposito_plazo,int),(posee_tarj_credito,int),(saldofinal_pasivo_titprinc,int),(numero_lineas_productos,int),(margen_financiero_titularidad_principal_interanual,int),(margen_ordinario_tp,int),(saldo_medio_mensual_total_pasivo_coefvarporcentual,double),(saldo_medio_mensual_total_pasivo_tendrelativa01m,double),(saldo_medio_mensual_total_pasivo_tendrelativa03m,double),(importe_lcp,int),(tiene_lcp,int),(nu_opernoautomoficmes_mt,int),(nu_tjcredactv_mt,int),(nu_ctrahorrplz_mt,int),(im_saldmedmensuahorrvis_mt,int),(segmento_valor,int),(segmento_marketing,int)]
+      &lt;/columns_ordered&gt;
+    &lt;/result&gt;
+&lt;/LoadData&gt;
+  &lt;RunScorer 
+  file=&quot;C:\Users\A175606\workspace\commander\runs\demos\testing\20.RunScorer.xml&quot;&gt;
+    &lt;data&gt;
+      &lt;input url=&quot;memory:test_data:repartition=40&quot;/&gt;
+      &lt;output 
+      url=&quot;lcsvgz:/Users/A175606/workspace/commander/runs/demos/testing//predictions2.csvgz&quot;&gt;
+&lt;/output&gt;
+    &lt;/data&gt;
+    &lt;model 
+    url=&quot;local:/Users/A175606/workspace/commander/runs/demos/testing//models/MLDecisionTreeS/DT_10&quot; nCategories=&quot;5&quot; balancing=&quot;1.0&quot;&gt;
+      &lt;conf 
+      URL=&quot;local:/Users/A175606/workspace/commander/runs/demos/testing//models/MLDecisionTreeS/DT_10&quot; model=&quot;MLDecisionTreeS&quot;&gt;
+        &lt;algo&gt;Classification&lt;/algo&gt;
+        &lt;impurity&gt;gini&lt;/impurity&gt;
+        &lt;maxDepth&gt;10&lt;/maxDepth&gt;
+        &lt;maxBins&gt;32&lt;/maxBins&gt;
+        &lt;numClasses&gt;2&lt;/numClasses&gt;
+        &lt;useNodeIdCache&gt;false&lt;/useNodeIdCache&gt;
+        &lt;categoricalColumns/&gt;
+&lt;/conf&gt;
+      &lt;result&gt;
+        &lt;stats&gt;
+          &lt;PredictionStatistics&gt;
+            &lt;decil1&gt;1.0&lt;/decil1&gt;
+            &lt;decil2&gt;0.6666666666666666&lt;/decil2&gt;
+            &lt;decil3&gt;0.3206243602865916&lt;/decil3&gt;
+            &lt;decil4&gt;0.2&lt;/decil4&gt;
+            &lt;decil5&gt;0.2&lt;/decil5&gt;
+            &lt;decil6&gt;0.12949640287769784&lt;/decil6&gt;
+            &lt;decil7&gt;0.06818181818181818&lt;/decil7&gt;
+            &lt;decil8&gt;0.06818181818181818&lt;/decil8&gt;
+            &lt;decil9&gt;0.055639097744360905&lt;/decil9&gt;
+            &lt;num_clientes&gt;1000&lt;/num_clientes&gt;
+          &lt;/PredictionStatistics&gt;
+        &lt;/stats&gt;
+      &lt;/result&gt;
+&lt;/model&gt;
+&lt;/RunScorer&gt;
+  &lt;CompareData 
+  file=&quot;C:\Users\A175606\workspace\commander\runs\demos\testing\30.CompareData.xml&quot;&gt;
+    &lt;data&gt;
+      &lt;input1 
+      url=&quot;lcsvgz:/Users/A175606/workspace/commander/runs/demos/testing//predictions.csvgz&quot;&gt;
+&lt;/input1&gt;
+      &lt;input2 
+      url=&quot;lcsvgz:/Users/A175606/workspace/commander/runs/demos/testing//predictions2.csvgz&quot;&gt;
+&lt;/input2&gt;
+    &lt;/data&gt;
+    &lt;result&gt;
+      &lt;SameSchema&gt;true&lt;/SameSchema&gt;
+      &lt;SameData&gt;true&lt;/SameData&gt;
+    &lt;/result&gt;
+&lt;/CompareData&gt;
+&lt;/result&gt;
+</code></pre>
+</div>
+</div> <!-- col -->
+</div> <!-- row -->
+
+<div class="row">
+  <div class="col-md-12" > 
+  <ul id="tree1">
+		<li> PrepareData
+		<ul>
+			<li><a style="overflow-wrap:break-word;">File: C:\Users\A175606\workspace\commander\runs\demos\testing\10.LoadTestDataToDB.xml</a></li>
+			  			<li>Data: <ul>
+   	<li>Input <ul>
+      <li><a style="overflow-wrap:break-word;">lcsvgz:/Users/A175606/workspace/commander/runs/demos/testing//test_data.csvgz</a></li>
+      </ul> 
+            
+				</li><li>Output <ul>
+      <li><a style="overflow-wrap:break-word;">db:datalabin.test_table_m2440eaf1_s20171108085923:dropFirst=true</a></li>
+      </ul> 
+            
+				</li>
+    </ul></li>
+  			
+<li> Transforms
+	<ul>
+		</ul>
+</li>
+  		</ul>
+  	</li>
+		<li> LoadData
+		<ul>
+			<li><a style="overflow-wrap:break-word;">File: C:\Users\A175606\workspace\commander\runs\demos\testing\11.LoadDataFromDB.xml</a></li>
+			  			<li>Data: <ul>
+   	<li>Output <ul>
+      <li><a style="overflow-wrap:break-word;">memory:test_data</a></li>
+      </ul> 
+            
+				</li>
+    </ul></li>
+  			  		</ul>
+  	</li>
+		<li> RunScorer
+		<ul>
+			<li><a style="overflow-wrap:break-word;">File: C:\Users\A175606\workspace\commander\runs\demos\testing\20.RunScorer.xml</a></li>
+			  			<li>Data: <ul>
+   	<li>Input <ul>
+      <li><a style="overflow-wrap:break-word;">memory:test_data:repartition=40</a></li>
+      </ul> 
+            
+				</li><li>Output <ul>
+      <li><a style="overflow-wrap:break-word;">lcsvgz:/Users/A175606/workspace/commander/runs/demos/testing//predictions2.csvgz</a></li>
+      </ul> 
+            
+				</li>
+    </ul></li>
+  			<li> Models
+	<ul>
+			<li><a href="#" class="withData">Model:local:/Users/A175606/workspace/commander/runs/demos/testing//models/MLDecisionTreeS/DT_10</a>
+			<div class="dataDiv collapse">
+			<pre><code class="xml">
+&lt;conf 
+URL=&quot;local:/Users/A175606/workspace/commander/runs/demos/testing//models/MLDecisionTreeS/DT_10&quot; model=&quot;MLDecisionTreeS&quot;&gt;
+  &lt;algo&gt;Classification&lt;/algo&gt;
+  &lt;impurity&gt;gini&lt;/impurity&gt;
+  &lt;maxDepth&gt;10&lt;/maxDepth&gt;
+  &lt;maxBins&gt;32&lt;/maxBins&gt;
+  &lt;numClasses&gt;2&lt;/numClasses&gt;
+  &lt;useNodeIdCache&gt;false&lt;/useNodeIdCache&gt;
+  &lt;categoricalColumns/&gt;
+&lt;/conf&gt;
+
+			
+&lt;stats&gt;
+  &lt;PredictionStatistics&gt;
+    &lt;decil1&gt;1.0&lt;/decil1&gt;
+    &lt;decil2&gt;0.6666666666666666&lt;/decil2&gt;
+    &lt;decil3&gt;0.3206243602865916&lt;/decil3&gt;
+    &lt;decil4&gt;0.2&lt;/decil4&gt;
+    &lt;decil5&gt;0.2&lt;/decil5&gt;
+    &lt;decil6&gt;0.12949640287769784&lt;/decil6&gt;
+    &lt;decil7&gt;0.06818181818181818&lt;/decil7&gt;
+    &lt;decil8&gt;0.06818181818181818&lt;/decil8&gt;
+    &lt;decil9&gt;0.055639097744360905&lt;/decil9&gt;
+    &lt;num_clientes&gt;1000&lt;/num_clientes&gt;
+  &lt;/PredictionStatistics&gt;
+&lt;/stats&gt;				
+						</code></pre>
+			</div>
+		</li>
+		</ul>
+</li>
+
+
+  		</ul>
+  	</li>
+		<li> CompareData
+		<ul>
+			<li><a style="overflow-wrap:break-word;">File: C:\Users\A175606\workspace\commander\runs\demos\testing\30.CompareData.xml</a></li>
+			  			<li>Data: <ul>
+   	<li>Input1 <ul>
+      <li><a style="overflow-wrap:break-word;">lcsvgz:/Users/A175606/workspace/commander/runs/demos/testing//predictions.csvgz</a></li>
+      </ul> 
+            
+				</li><li>Input2 <ul>
+      <li><a style="overflow-wrap:break-word;">lcsvgz:/Users/A175606/workspace/commander/runs/demos/testing//predictions2.csvgz</a></li>
+      </ul> 
+            
+				</li>
+    </ul></li>
+  			
+<li><a href="#" class="withData">Result</a>		
+	<div class="dataDiv collapse">
+		<pre><code class="xml">
+&lt;result&gt;
+  &lt;SameSchema&gt;true&lt;/SameSchema&gt;
+  &lt;SameData&gt;true&lt;/SameData&gt;
+&lt;/result&gt;
+		</code></pre>
+	</div>
+</li>
+  		</ul>
+  	</li>
+		</ul>
+  </div>
+</div>
+
+
+
+
+
+<script>
+$('#tree1').treed({openedClass:'glyphicon-chevron-right', closedClass:'glyphicon-chevron-down'});
+</script>
+<script>
+/* TODO: Mejorar metodo para q se puedna pintar varios highcharts*/
+	function print_chart( container, data_id ){
+    	var data = $.parseJSON( unescape( $(data_id).html() ) );
+        $(container).highcharts(data);
+	}
+
+/*	$('.withData').click(function(e){
+    	e.preventDefault();
+	 	var me = $(this);
+     	var dataContent = me.find('.dataDiv').html();
+		var statsContent = me.find('.statsDiv').html();
+		var imgContent = me.find('.imgDiv').html();
+
+     	if(dataContent) { $("#data_container").html(dataContent) } else $("#data_container").empty();
+     	if(statsContent) { $("#stats_container").html(statsContent) } else $("#stats_container").empty();
+     	if(imgContent) { print_chart( "#img_container", me.find('.imgDiv') ) } else $("#img_container").empty();
+	});
+*/
+
+	$('.withData').click(function(e){
+    	e.preventDefault();
+	 	var me = $(this);
+		me.parent().children("div").collapse("toggle")
+	});
+
+</script>
+
+
+
+
+
+
+	</div>
+	<footer class="footer">
+		<div class="container">
+    		<p><a href='mailto:alago@modelicious.com,lsanchezm@modelicious.com'>Support</a></p>
+		</div>
+	</footer>
+	<script>hljs.initHighlightingOnLoad();</script>
+	<script>$(document).ready(function() {
+    			$('.stats').DataTable();
+    			
+    			$('.imgDiv').each( function() {
+
+    				var item= $(this)
+    				 console.log( item.html() )
+    				var data = $.parseJSON( unescape( item.find('a').html().trim() ) );
+    				item.find("div").highcharts(data);
+        		})
+    			
+			} );
+	</script>
+</body>
+</html>

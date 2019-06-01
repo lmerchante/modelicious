@@ -1,0 +1,375 @@
+<?xml version="1.0" ?>
+<result>
+	<LoadData file="C:\Users\A181345\dev\commander\run\10.LoadData.xml">
+		<data>
+			<output url="memory:k1|hdfs:test.dat"/>
+		</data>
+		<sql>
+			<table>
+				datalabin.cc_clientes_compartidos
+			</table>
+			<label>
+				etiqueta_binaria
+			</label>
+			<columns>
+				<exclude>
+					<column>
+						cliente
+					</column>
+					<column>
+						sexo
+					</column>
+					<column>
+						ind_cargo_comunidad
+					</column>
+					<column>
+						etiqueta
+					</column>
+				</exclude>
+			</columns>
+		</sql>
+	</LoadData>
+	<PrepareData file="C:\Users\A181345\dev\commander\run\20.ProcessData.xml">
+		<data>
+			<input url="memory:k1"/>
+			<output url="memory:k2|hdfs:preparenofs.dat"/>
+		</data>
+		<transformations>
+			<drop>
+				<columna>
+					seg_valor
+				</columna>
+				<result>
+					 Column seg_valor dropped 
+				</result>
+			</drop>
+			<filter>
+				<condicion>
+					cod_postal is not null
+				</condicion>
+				<result>
+					 Filter cod_postal is not null applied 
+				</result>
+			</filter>
+			<filter>
+				<condicion>
+					ingresos_mensuales is not null
+				</condicion>
+				<result>
+					 Filter ingresos_mensuales is not null applied 
+				</result>
+			</filter>
+			<filter>
+				<condicion>
+					porcingexternosestimados is not null
+				</condicion>
+				<result>
+					 Filter porcingexternosestimados is not null applied 
+				</result>
+			</filter>
+			<filter>
+				<condicion>
+					estado_civil is not null
+				</condicion>
+				<result>
+					 Filter estado_civil is not null applied 
+				</result>
+			</filter>
+			<filter>
+				<condicion>
+					label is not null
+				</condicion>
+				<result>
+					 Filter label is not null applied 
+				</result>
+			</filter>
+			<purge_invariant>
+				<min_relative_std>
+					0.1
+				</min_relative_std>
+				<auto>
+					true
+				</auto>
+				<columns_purged>
+					 List() 
+				</columns_purged>
+			</purge_invariant>
+			<purge_correlated>
+				<max_correlation>
+					0.85
+				</max_correlation>
+				<columns_purged>
+					 List(porcingexternosestimados, ind_movilizacion_pension) 
+				</columns_purged>
+			</purge_correlated>
+			<remove_outliers>
+				<columns>
+					all
+				</columns>
+				<times>
+					3.0
+				</times>
+				<params>
+					 
+					<columns>
+						 cod_postalind_seguros_medicosingresos_mensualesindhipotecasinseguroavgingresos12mmaxadfinext12mmaxmovextplanpens12mmaxmovextfondinv12mavgcirbeotrasent12mtrforgmodelicioussamecustomertrfdestmodelicioussamecustomer 
+					</columns>
+					 
+					<lines_removed>
+						 93796 
+					</lines_removed>
+					 
+				</params>
+			</remove_outliers>
+			<discretize>
+				<limit>
+					50
+				</limit>
+				<nCategories>
+					5
+				</nCategories>
+				<exclude>
+					cod_postal, avgingresos12m,
+				</exclude>
+				<discretizacion>
+					
+             
+					<antes>
+						 <schema>
+  <column name="edad" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:53}"/>
+  <column name="estado_civil" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:7}"/>
+  <column name="cod_postal" dataType="double" nullable="true" metadata="{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:13186}"/>
+  <column name="ind_nomina_domiciliada" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ind_recibos_importantes" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ind_pago_colegios" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ind_seguros_medicos" dataType="double" nullable="true" metadata="{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:1}"/>
+  <column name="ind_seguros_autos" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ind_tarj_credito" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ind_fondos_inversion" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ind_prestamo_consumo" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ind_valores" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ind_deposito_plazo" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ind_tarj_debito" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ind_seguro_vida" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ind_prestamo_prim_vivienda" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ind_pensiones" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="indfinsinnomina" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="indhipsinrecibos" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ind_cambio_nomina_12m" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:3}"/>
+  <column name="ind_no_nomina_24m" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:2}"/>
+  <column name="ingresos_mensuales" dataType="double" nullable="true" metadata="{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:396036}"/>
+  <column name="indhipotecasinseguro" dataType="double" nullable="true" metadata="{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:1}"/>
+  <column name="avgingresos12m" dataType="double" nullable="true" metadata="{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:402063}"/>
+  <column name="maxadfinext12m" dataType="double" nullable="true" metadata="{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:1}"/>
+  <column name="maxmovextplanpens12m" dataType="double" nullable="true" metadata="{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:1}"/>
+  <column name="maxmovextfondinv12m" dataType="double" nullable="true" metadata="{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:1}"/>
+  <column name="avgcirbeotrasent12m" dataType="double" nullable="true" metadata="{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:9343}"/>
+  <column name="avgoptarjdebcomer12m" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:164}"/>
+  <column name="avgoptarjdebcaj12m" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:80}"/>
+  <column name="avgoptarjcrecomer12m" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:46}"/>
+  <column name="avgoptarjcrecaj12m" dataType="double" nullable="true" metadata="{&quot;dif_values&quot;:237}"/>
+  <column name="trforgmodelicioussamecustomer" dataType="double" nullable="true" metadata="{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:1}"/>
+  <column name="trfdestmodelicioussamecustomer" dataType="double" nullable="true" metadata="{&quot;outliers_std_multiplier&quot;:3.0,&quot;dif_values&quot;:1}"/>
+</schema>
+					</antes>
+					
+             
+					<despues>
+						<schema>
+  <column 
+  name="edad" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 34.0, 43.0, 51.0, 60.0, Infinity)&quot;}}">
+</column>
+  <column name="estado_civil" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:7}}"/>
+  <column name="cod_postal" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:13186},&quot;outliers_std_multiplier&quot;:3.0}"/>
+  <column name="ind_nomina_domiciliada" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="ind_recibos_importantes" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="ind_pago_colegios" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="ind_seguros_medicos" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:1},&quot;outliers_std_multiplier&quot;:3.0}"/>
+  <column name="ind_seguros_autos" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="ind_tarj_credito" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="ind_fondos_inversion" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="ind_prestamo_consumo" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="ind_valores" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="ind_deposito_plazo" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="ind_tarj_debito" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="ind_seguro_vida" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="ind_prestamo_prim_vivienda" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="ind_pensiones" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="indfinsinnomina" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="indhipsinrecibos" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column name="ind_cambio_nomina_12m" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:3}}"/>
+  <column name="ind_no_nomina_24m" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:2}}"/>
+  <column 
+  name="ingresos_mensuales" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 0.12, 400.0, 1273.53, Infinity)&quot;},&quot;outliers_std_multiplier&quot;:3.0}">
+</column>
+  <column name="indhipotecasinseguro" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:1},&quot;outliers_std_multiplier&quot;:3.0}"/>
+  <column name="avgingresos12m" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:402063},&quot;outliers_std_multiplier&quot;:3.0}"/>
+  <column name="maxadfinext12m" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:1},&quot;outliers_std_multiplier&quot;:3.0}"/>
+  <column name="maxmovextplanpens12m" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:1},&quot;outliers_std_multiplier&quot;:3.0}"/>
+  <column name="maxmovextfondinv12m" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:1},&quot;outliers_std_multiplier&quot;:3.0}"/>
+  <column 
+  name="avgcirbeotrasent12m" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 1000.0, 1571.43, 1857.14, Infinity)&quot;},&quot;outliers_std_multiplier&quot;:3.0}">
+</column>
+  <column 
+  name="avgoptarjdebcomer12m" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 1.0, 2.0, 7.0, Infinity)&quot;}}">
+</column>
+  <column 
+  name="avgoptarjdebcaj12m" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 1.0, 2.0, 3.0, Infinity)&quot;}}">
+</column>
+  <column name="avgoptarjcrecomer12m" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:46}}"/>
+  <column 
+  name="avgoptarjcrecaj12m" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:5,&quot;buckets&quot;:&quot;List(-Infinity, 0.0, 1.0, 2.0, 3.0, Infinity)&quot;}}">
+</column>
+  <column name="trforgmodelicioussamecustomer" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:1},&quot;outliers_std_multiplier&quot;:3.0}"/>
+  <column name="trfdestmodelicioussamecustomer" dataType="double" nullable="true" metadata="{&quot;discretizer&quot;:{&quot;dif_values&quot;:1},&quot;outliers_std_multiplier&quot;:3.0}">
+  </column>
+</schema>
+					</despues>
+					
+           
+				</discretizacion>
+			</discretize>
+			<onehot>
+				<columns>
+					estado_civil
+				</columns>
+				<result>
+					 
+					<params>
+						 
+						<labels>
+							 List(estado_civil->2.0,1.0,6.0,4.0,3.0,5.0,7.0) 
+						</labels>
+						 
+						<dimensions>
+							 ArrayBuffer(estado_civil->6) 
+						</dimensions>
+						 
+					</params>
+					 
+				</result>
+			</onehot>
+			<standarize>
+				<withMean>
+					true
+				</withMean>
+				<withSTD>
+					true
+				</withSTD>
+				<standarize>
+					
+      
+					<params>
+						
+        
+						<mean>
+							
+          List(2.0827068303566585, 28194.973522204215, 0.45608329210708903, 0.7170998398856109, 0.018557294260884923, 0.0, 0.012716620593584794, 0.2699557287792185, 0.06328498026905854, 0.08145837124319696, 0.0718419454699834, 0.11950951503593081, 0.6789001972391026, 0.10624980488431855, 0.08736963811560579, 0.11516648605868574, 0.10995918250256005, 0.04835409551682523, 0.05983603814058048, 0.5583008468653382, 2.026742731079552, 0.0, 777.7444356607617, 0.0, 0.0, 0.0, 1.1163508206671084, 2.197894972498165, 2.0985472705882278, 0.14806235714368068, 1.4855347210288898, 0.0, 0.0, 0.5037539553991568, 0.4278671036507937, 0.026222985091333827, 0.025783113486592776, 0.016224906014006703, 1.319052318564916E-4)
+        
+						</mean>
+						
+        
+						<std>
+							
+          List(1.415771993776182, 13327.13796111249, 0.4980676585940803, 0.4504083886627191, 0.13495527486151038, 0.0, 0.11204870229192869, 0.4439365818523341, 0.24347486156434517, 0.2735377963671346, 0.25822606199776427, 0.3243871459331866, 0.46689911194857614, 0.3081571199143135, 0.28237600265743007, 0.31922279869651027, 0.31283891735387437, 0.21451337931577188, 0.36104392240486666, 0.49658944875098077, 1.2523427670245701, 0.0, 1103.0269674640788, 0.0, 0.0, 0.0, 0.5788485196810534, 1.24817076274393, 1.2542959192870793, 0.7180378016299449, 1.0222329599386868, 0.0, 0.0, 0.4999859779302564, 0.49476955657444743, 0.1597978326698911, 0.1584877017626671, 0.1263394749396498, 0.011484244422663496)
+        
+						</std>
+						
+      
+					</params>
+					
+    
+				</standarize>
+			</standarize>
+			<pca>
+				<components>
+					5
+				</components>
+				<principal_components>
+					<pca>
+						<principal_componentes>
+							39; 5;[-0.009563735376494659,-0.03317689772177279,-0.37373561170781855,-0.22981200105072133,-0.053606412311371705,0.0,-0.047461315742337175,-0.2504837767344317,-0.03323978242212474,-0.136006152039495,-0.02282337647684242,-0.03753439219699879,-0.25711396436023454,-0.13279993865734296,-0.043512339602580004,-0.06337189554560028,0.09659698686128564,0.12004354966204758,-0.08483693080787734,-0.35190939205229743,-0.3740565050810592,0.0,-0.3278662755965471,0.0,0.0,0.0,-0.005769639975617866,-0.285006981404592,-0.2855655401449126,-0.11315317645689406,-0.21479947013326833,0.0,0.0,0.023950752416885407,0.0020867446519712554,-0.025010082251394773,-0.027551161473058097,-0.03679566916328159,4.299894868076613E-4,-0.4614502062730478,0.02327462138005376,-0.003640759505617444,-0.10987422498272524,0.020714045640358364,2.1684043449710089E-19,-0.04391420720689315,-0.17789638573822236,-0.1518680616395149,-0.032715227488188156,-0.15337476416591272,-0.17810046283279998,0.18019205921078923,0.015999486226896648,0.08842084433840278,-0.11742665019367389,-0.0590883439893617,-0.023103673755936003,0.055215617742228815,0.017196151813935755,-0.02928859847512502,0.0,-0.11665095047304108,0.0,0.0,0.0,-0.11042286961570216,0.21815298634641506,0.21145931129175888,-0.10885025309250569,-0.16787738870827762,0.0,0.0,-0.4527830195718853,0.48180415685222716,-0.011726796701168019,-0.024039370890072898,-0.04993256862842517,-1.7826432372934487E-4,-0.10890562736781803,-0.024289919101634083,-0.1862183726363361,-0.00501479341469635,0.0419221491883115,-2.7755575615628914E-17,0.045701169252810925,0.2342981203732206,-0.12464231155627878,0.3306380900915947,-0.09430664469875842,-0.18377537478935926,0.0060019112400890974,0.37638579980795495,0.25665232457667675,0.08995033268359359,0.45970240504008686,0.17468597766414062,-0.23894645316628305,-0.08914113520041839,-0.14845467000947407,0.0,-0.09838156546547369,0.0,-1.9259299443872359E-34,0.0,0.11550355083235933,0.03253157876648652,0.03532219582930491,0.25088530560644695,0.2952323581231538,0.0,0.0,-0.036106725319086146,0.01343195856221478,0.04900931363580192,0.04414389936826564,-0.02675634656126167,-0.0036493305416730533,0.05332565595741183,-0.009706865621250046,0.21112795598629147,-0.0421899831516967,0.021963262853906054,0.0,-0.04973154884641706,-0.21969770685314405,-0.4073848287351853,0.11401429090168849,-0.3361819546653724,-0.3583817771283603,-0.14235913117148224,0.1444794973262759,0.19164971735828737,-0.12624254015306574,-0.07617155486806261,0.26583011483911434,0.27266617784532465,0.12441477415576797,0.16376873071808057,6.462348535570529E-27,0.05461969267551108,-5.0487097934144756E-29,-1.2621774483536189E-29,0.0,0.14217569399208457,-0.08002514367247628,-0.05783288788464486,-0.1150368538968419,-0.20865898713775038,0.0,0.0,0.20664820698731193,-0.2367567350270454,0.04209891558568407,0.04347850973109092,0.0017871838986005726,-0.0021977043892317284,-0.06375134141303715,-0.021895417895721025,0.19392749493706743,-0.24592187961671855,-0.09303451464774322,1.1102230246251565E-16,0.013749032993672444,0.13540894490225422,0.11177952469216795,-0.06300308468044935,0.08375461706730376,0.06343422011176489,-0.3239448458087732,-0.007461737394490199,0.11856166713334908,0.1345758117312204,-0.0821464930176273,0.2580668866510132,0.22952975922519653,0.0830751381426322,0.17937010436952683,-4.1359030627651384E-25,0.13746274772238706,-6.462348535570529E-27,-8.077935669463161E-28,2.0194839173657902E-28,0.01772772037475347,-0.35231839400568293,-0.3128515277225558,0.24188463920652029,0.17452252619754988,0.0,0.0,-0.33921837881016903,0.2829310258598232,0.04411391714999152,0.06947502657765546,0.09135012858231796,0.0011851468363242225]
+						</principal_componentes>
+						<components>
+							5
+						</components>
+					</pca>
+				</principal_components>
+			</pca>
+		</transformations>
+	</PrepareData>
+	<SelectClassifier file="C:\Users\A181345\dev\commander\run\30.SelectClassifier.xml">
+		<options>
+			<kfolds>
+				5
+			</kfolds>
+			<training_rate>
+				0.75
+			</training_rate>
+		</options>
+		<data>
+			<input url="memory:k2"/>
+		</data>
+		<models>
+			<model id="SVM" name="SVM_regL2_1">
+				<conf>
+					<numIterations>
+						40
+					</numIterations>
+					<regParam>
+						1
+					</regParam>
+					<regType>
+						L2
+					</regType>
+				</conf>
+				<Statistics>
+					<TNR>
+						0.72(0.00)
+					</TNR>
+					<FNR>
+						0.42(0.00)
+					</FNR>
+					<N>
+						261381.20(393.61)
+					</N>
+					<PrecisionMinimaExclu>
+						0.37(0.00)
+					</PrecisionMinimaExclu>
+					<VolCampaniaExclu>
+						377843.20(450.22)
+					</VolCampaniaExclu>
+					<VolCampanha>
+						333273.40(711.66)
+					</VolCampanha>
+					<PrecisionMinima>
+						0.63(0.00)
+					</PrecisionMinima>
+					<Precision>
+						0.78(0.00)
+					</Precision>
+					<Accuracy>
+						0.63(0.00)
+					</Accuracy>
+					<TPR>
+						0.58(0.00)
+					</TPR>
+					<P>
+						449735.40(754.35)
+					</P>
+					<FPR>
+						0.28(0.00)
+					</FPR>
+					<Tiempo>
+						8.64(2.93)
+					</Tiempo>
+					<PrecisionExclu>
+						0.50(0.00)
+					</PrecisionExclu>
+				</Statistics>
+			</model>
+		</models>
+	</SelectClassifier>
+	
+
+</result>

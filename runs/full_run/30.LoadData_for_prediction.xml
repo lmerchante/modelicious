@@ -1,0 +1,19 @@
+<LoadData>
+	<data>
+		<output url="memory:k1|csvgz:datos.checkpoint.raw.cliente.20vars.csvgz"/>
+	</data>
+	<sql>
+		<table>${environment.outputdb}.fond_inv_cross_mixto_renta_fija_training</table>
+		<label>cliente</label>
+		<columns>
+			<!--exclude>
+				<column>cliente</column>
+				<column>tipo_de_documento</column>
+				<column>documento</column>
+				<column>cod_postal</column>
+				<column>fecha_caracterizacion</column>
+			</exclude-->
+      <include_only>cliente,posee_deposito_plazo,posee_fondos_inversion,posee_plan_pensiones,posee_tarj_credito,saldofinal_pasivo_titprinc,numero_lineas_alta_vinculacion,numero_lineas_productos,comisiones_todas_titularidades_interanual,margen_financiero_titularidad_principal_interanual,margen_ordinario_tp,importe_lcp,numerlavs_mt,numercontrat_ahorroplazo_mt,saldomensual_fondoinvers_mt,saldomedio_mensualtotalpasivo_mt,saldomediomensualahorrovista_mt,import_totalcomisionesmes_mt,tenenc_fondoinvers_mt,codigo_segmento_interno,tenenc_accionmodelicious_mt</include_only>
+		</columns>
+	</sql>
+</LoadData>

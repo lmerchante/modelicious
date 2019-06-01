@@ -1,0 +1,48 @@
+<PrepareData>
+	<data>
+		<input url="memory:k1"/>
+		<output url="memory:k2|hdfs:preparenofs.dat"/>
+	</data>
+	<transformations>
+		<!--sampling><sampling_rate>0.01</sampling_rate></sampling-->
+		<drop><columna>seg_valor</columna></drop>
+		<filter><condicion>cod_postal is not null</condicion></filter>
+		<filter><condicion>ingresos_mensuales is not null</condicion></filter>
+		<filter><condicion>porcingexternosestimados is not null</condicion></filter>
+		<filter><condicion>estado_civil is not null</condicion></filter>
+		<!--filter><condicion>label is not null</condicion></filter-->
+		<!--purge_invariant>
+			<min_relative_std>0.1</min_relative_std>
+			<auto>true</auto>
+		</purge_invariant>
+		<purge_correlated>
+			<max_correlation>0.85</max_correlation>
+		</purge_correlated>
+		<remove_outliers>
+			<columns>ingresos_mensuales,trforgmodelicioussamecustomer,maxmovextplanpens12m</columns>
+			<columns>all</columns>
+			<times>3.0</times>
+			<max_percentage_of_outliers>0.20</max_percentage_of_outliers>
+		</remove_outliers>	
+		<feature_selection>
+			<method>mifs</method>
+			<num_features>10</num_features>
+			<num_partitions>100</num_partitions>
+		</feature_selection>		
+		<discretize>
+			<limit>50</limit>
+			<nCategories>5</nCategories>
+			<exclude>cod_postal, avgingresos12m,</exclude>
+		</discretize>
+		<onehot>
+			<columns>estado_civil</columns>
+		</onehot>
+		<standarize>
+			<withMean>true</withMean>
+			<withSTD>true</withSTD>
+		</standarize>
+		<pca>
+			<components>5</components>
+		</pca-->
+	</transformations>
+</PrepareData>

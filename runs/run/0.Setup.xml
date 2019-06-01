@@ -1,0 +1,13 @@
+<spark App="ModelsTemplate" Master="yarn-client" base="/user/A175606/prueba_discretizacion" checkpointFolder="cache" logLevel="INFO">
+	<settings>
+		<setting name="spark.executor.memory">8g</setting>
+		<setting name="spark.executor.cores">4</setting>
+		<setting name="spark.executor.instances">120</setting>
+		<setting name="spark.logLineage">true</setting>
+	</settings>
+	<notifications>
+		<enabled>true</enabled>
+		<email>lsanchezm@modelicious.com</email>
+	</notifications>
+	
+</spark>

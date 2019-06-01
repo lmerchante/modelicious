@@ -1,0 +1,40 @@
+<SelectScorer>
+    <options>
+        <kfolds>2</kfolds>
+        <training_rate>0.75</training_rate>
+        <overfitting_splits>0.001,0.01,0.1,1</overfitting_splits>
+        <nCategories>5</nCategories>
+        <save>
+          <local>${environment.outputdir}</local>
+          <remote>${environment.outputfiles}</remote>
+        </save>
+    </options>
+    <data>
+        <input url="csvgz:datos.checkpoint.trainmatrix.20vars.csvgz:repartition=4"/>
+    </data>
+    <models>
+        <model name= "RF_12_16" id="MLRandomForestS" test_overfitting="false">
+            <conf>
+                <numTrees>12</numTrees>
+                <featureSubsetStrategy>auto</featureSubsetStrategy>
+                <impurity>gini</impurity>
+                <maxDepth>16</maxDepth>
+                <maxBins>32</maxBins>
+                <useNodeIdCache>true</useNodeIdCache>
+            </conf>
+        </model>
+        <!--model name= "SVM_regL2_0.01" id="SVM_SC" test_overfitting="false">
+            <conf>
+                <numIterations>100</numIterations>
+                <regParam>0.01</regParam>
+                <regType>L2</regType>
+            </conf>
+        </model> 
+        <model name= "Bayes_10" id="NaiveBayesSC" test_overfitting="false">
+            <conf>
+                <lambda>10</lambda>
+                <modelType>multinomial</modelType>
+            </conf>
+        </model-->
+    </models>
+</SelectScorer>

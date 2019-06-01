@@ -1,0 +1,7 @@
+<RunScorer>
+  <data>
+    <input url="memory:test_data:repartition=40"/>
+    <output url="lcsvgz:${environment.workingdir}/predictions2.csvgz"/>
+  </data>
+  <model url = "local:${environment.workingdir}/models/MLDecisionTreeS/DT_10" nCategories="5" balancing="1.0"/>
+</RunScorer>

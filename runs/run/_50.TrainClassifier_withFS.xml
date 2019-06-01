@@ -1,0 +1,73 @@
+<TrainClassifier>
+	<options>
+		<kfolds>5</kfolds>
+		<training_rate>0.75</training_rate>
+	</options>
+	<batches>
+		<batch>
+			<data>
+				<input url="memory:k3"/>
+			</data>
+			<models>
+			<!--model name= "SVM_regL2_1" id="SVM">
+					<conf>
+						<numIterations>5</numIterations>
+						<regParam>1</regParam>
+						<regType>L2</regType>
+					</conf>
+				</model>  
+				<model name= "SVM_regL1_1" id="SVM">
+					<conf>
+						<numIterations>100</numIterations>
+						<regParam>1</regParam>
+						<regType>L1</regType>
+					</conf>
+				</model>
+				-->
+				<model name= "RF_6_4" id="RandomForest">
+					<conf>
+						<numTrees>20</numTrees>
+						<algo>Classification</algo>
+						<featureSubsetStrategy>auto</featureSubsetStrategy>
+						<impurity>gini</impurity>
+						<maxDepth>5</maxDepth>
+						<maxBins>64</maxBins>
+						<numClasses>3</numClasses>
+						<useNodeIdCache>true</useNodeIdCache>
+					</conf>
+				</model> 
+				<model name= "DT_6_4" id="DecisionTree">
+					<conf>
+						<algo>Classification</algo>
+						<impurity>gini</impurity>
+						<maxDepth>5</maxDepth>
+						<maxBins>64</maxBins>
+						<numClasses>3</numClasses>
+						<useNodeIdCache>false</useNodeIdCache>
+					</conf>
+				</model>
+				<model name= "Bayes_10" id="NaiveBayes">
+					<conf>
+						<lambda>10</lambda>
+						<modelType></modelType>
+					</conf>
+				</model>  
+				<model name= "NN_36_6_6_3" id="MultilayerPerceptron">
+					<conf>
+						<numClasses>3</numClasses>
+						<layers>6,6</layers>
+						<blockSize>128</blockSize>
+						<maxIter>100</maxIter>
+					</conf>
+				</model>
+				<!--
+				<model name= "1VsAll" id="OneVsAllLogistic">
+					<conf>
+						<numClasses>2</numClasses >
+					</conf>
+				</model> 
+				-->
+			</models>
+		</batch>
+	</batches>
+</TrainClassifier>

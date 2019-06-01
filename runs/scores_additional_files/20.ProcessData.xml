@@ -1,0 +1,36 @@
+<PrepareData>
+	<data>
+		<input url="memory:k1"/>
+		<output url="memory:k2|csvgz:datos.checkpoint.trainmatrix.20vars.csvgz"/>
+	</data>
+	<transformations>
+		<!--save url="csvgz:datos.checkpoint.test.csvgz"/-->
+		<purge_invariant>
+			<min_relative_std>0.1</min_relative_std>
+			<auto>false</auto>
+			<exclude>segmento_valor,segmento_actividad,segmento_socioeconomico,segmento_por_relacion,segmento_marketing</exclude>
+		</purge_invariant>
+		<purge_correlated>
+			<max_correlation>0.90</max_correlation>
+		</purge_correlated>
+		<remove_outliers force_checkpoint="true">
+			<columns>all</columns>
+			<times>3.0</times>
+			<max_percentage_of_outliers>0.05</max_percentage_of_outliers>
+			<bulk>true</bulk>
+		</remove_outliers>	
+		<discretize>
+			<limit>50</limit>
+			<nCategories>5</nCategories>
+		</discretize>
+		<!--onehot force_checkpoint="true">
+			<binary>true</binary>
+			<columns>cod_sexo,cod_estado_civil,segmento_valor,segmento_actividad,segmento_socioeconomico,segmento_por_relacion,segmento_marketing,clasificacion_nivel_renta,codigo_segmento_interno,tenenc_accionmodelicious_mt,tenenc_fondoinvers_mt,tenenc_planpensiones_mt</columns>
+		</onehot-->
+		<!--standarize>
+			<withMean>true</withMean>
+			<withSTD>true</withSTD>
+		</standarize-->
+    <!--pca><components>10</components></pca-->
+	</transformations>
+</PrepareData>

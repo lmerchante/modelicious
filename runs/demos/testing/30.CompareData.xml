@@ -1,0 +1,6 @@
+<CompareData>
+  <data>
+    <input1 url="lcsvgz:${environment.workingdir}/predictions.csvgz"/>
+    <input2 url="lcsvgz:${environment.workingdir}/predictions2.csvgz"/>
+  </data>
+</CompareData>

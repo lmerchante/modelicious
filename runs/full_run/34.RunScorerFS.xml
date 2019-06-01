@@ -1,0 +1,7 @@
+<RunScorer>
+	<data>
+		<input url="csvgz:datos.checkpoint.raw.cliente.20vars.csvgz:repartition=4"/>
+    <output url="scores:${environment.outputdb}.alberto_test_COMM"/>
+	</data>
+	<model url = "local:${environment.workingdir}/models/MLRandomForestS/RF_12_16" nCategories="5"/>
+</RunScorer>

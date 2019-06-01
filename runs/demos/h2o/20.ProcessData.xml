@@ -1,0 +1,28 @@
+<PrepareData>
+	<data>
+		<input url="lcsv:${environment.workingdir}/data.csv"/>
+		<output url="hdfs:${environment.tmpfiles}/temp.dat"/>
+	</data>
+	<transformations>
+		<!--sampling force_checkpoint="false">
+			<sampling_rate>0.1</sampling_rate>
+		</sampling-->
+		<remove_outliers force_checkpoint="false">
+			<columns>all</columns>
+			<times>3.0</times>
+			<max_percentage_of_outliers>0.05</max_percentage_of_outliers>
+		</remove_outliers>	
+		<discretize force_checkpoint="false">
+			<limit>50</limit>
+			<nCategories>5</nCategories>
+		</discretize>
+		<onehot force_checkpoint="false">
+			<binary>true</binary>
+			<columns>cod_sexo,cod_estado_civil,segmento_valor,segmento_actividad,segmento_socioeconomico,segmento_por_relacion,segmento_marketing,clasificacion_nivel_renta,codigo_segmento_interno,IN_TenAcctaBK_MT,IN_TenFondInver_MT,IN_TenPlanPens_MT</columns>
+		</onehot>
+		<standarize force_checkpoint="false">
+			<withMean>true</withMean>
+			<withSTD>true</withSTD>
+		</standarize>
+	</transformations>
+</PrepareData>

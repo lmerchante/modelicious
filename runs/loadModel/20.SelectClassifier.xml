@@ -1,0 +1,9 @@
+<RunClassifier>
+	<data>
+		<input url="hdfs:input.dat"/>
+    <output url="csv:predictions.csv"/>
+	</data>
+	<model url = "/user/A181345/prueba_discretizacion/models/SVM/SVM_regL2_1"/>
+  <!--model name= "SVM_regL2_1" id="SVM" url = "models"/>
+  <model name= "SVM_regL2_1" id="SVM" url = "models/SVM/SVM_regL2_1"/-->
+</RunClassifier>

@@ -1,0 +1,8 @@
+<RunScorer>
+	<data>
+		<input url="csvgz:datos.checkpoint.raw.cliente.20vars.csvgz:repartition=4"/>
+    <!--output url="scores:${environment.outputdb}.alberto_test_COMM"/-->
+    <output url="scores:${environment.outputdb}.temp_alberto_scores_eff:json=${environment.outputdir}/${modelid}-${sessionid}.json&amp;ic=${environment.outputdir}/${modelid}-${sessionid}.ic"/>
+	</data>
+	<model url = "local:${environment.workingdir}/models/MLRandomForestS/RF_12_16" nCategories="5" efficiency="0.75"/>
+</RunScorer>

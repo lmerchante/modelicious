@@ -1,0 +1,12 @@
+<LoadData>
+	<data>
+		<output url="memory:test_data"/>
+	</data>
+	<sql>
+		<table>${environment.tmpdb}.test_table_${modelid}_${sessionid}</table>
+		<label>label</label>
+		<columns>
+			<include_only>label,antiguedad_hasta_la_caracterizacion,edad,marca_modelicious_sin_comisiones,posee_deposito_plazo,posee_tarj_credito,saldofinal_pasivo_titprinc,numero_lineas_productos,margen_financiero_titularidad_principal_interanual,margen_ordinario_tp,saldo_medio_mensual_total_pasivo_coefvarporcentual,saldo_medio_mensual_total_pasivo_tendrelativa01m,saldo_medio_mensual_total_pasivo_tendrelativa03m,importe_lcp,tiene_lcp,nu_opernoautomoficmes_mt,nu_tjcredactv_mt,nu_ctrahorrplz_mt,im_saldmedmensuahorrvis_mt,segmento_valor,segmento_marketing</include_only>
+		</columns>
+	</sql>
+</LoadData>
